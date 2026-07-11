@@ -1,5 +1,5 @@
 # Security contact for the kevin-website project.
 Contact: mailto:chrisportka@gmail.com
-Expires: 2027-07-11T00:00:00.000Z
+Expires: 2027-06-01T00:00:00.000Z
 Preferred-Languages: en
 Canonical: https://cportka.github.io/kevin-website/.well-known/security.txt

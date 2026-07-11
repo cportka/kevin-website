@@ -78,8 +78,13 @@
       var playIO = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
-            var p = video.play();
-            if (p && typeof p.catch === "function") { p.catch(function () {}); }
+            // Only auto-resume the silent loop. If the viewer unmuted, don't
+            // force playback on scroll-back (no gesture => audio would be
+            // blocked or would blare); leave it for the button/gesture.
+            if (video.muted) {
+              var p = video.play();
+              if (p && typeof p.catch === "function") { p.catch(function () {}); }
+            }
           } else {
             video.pause();
           }

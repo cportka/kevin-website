@@ -1,0 +1,498 @@
+/* =========================================================================
+   Kevin Haulihan — "Wall Label" design system
+   A white-cube exhibition hang: near-monochrome, refined grotesque type,
+   an asymmetric 12-column grid keyed to each thumbnail's native aspect
+   ratio, rounded frames, wall-label captions underneath, a filmic
+   desaturate→saturate hover, and a single ember accent used only as signal.
+   ========================================================================= */
+
+/* ---- Fonts (loaded via <link> in the head; stacks fall back gracefully) -- */
+
+:root {
+  /* Palette — pure white ground, warm near-black ink, bone hairlines */
+  --bg:      #ffffff;
+  --ink:     #17150f;
+  --muted:   #78746b;
+  --line:    #e9e5dc;
+  --accent:  #c8452a;   /* ember — signal only (hover index, focus ring, ↗) */
+  --placeholder: #f4f1ea;
+
+  /* Type families */
+  --font-display: "Schibsted Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-body:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono:    "Geist Mono", ui-monospace, "SF Mono", "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+
+  /* Fluid type scale */
+  --fs-display: clamp(3rem, 7.5vw, 6rem);
+  --fs-h2:      clamp(1.75rem, 3vw, 2.5rem);
+  --fs-lead:    clamp(1.5rem, 2.4vw, 2rem);
+  --fs-body:    1.0625rem;   /* 17px */
+  --fs-caption: 0.875rem;    /* 14px */
+  --fs-meta:    0.75rem;     /* 12px */
+  --fs-eyebrow: 0.8125rem;   /* 13px */
+  --fs-index:   0.6875rem;   /* 11px */
+
+  /* Spacing ladder (8px base) */
+  --s-1: 8px;   --s-2: 16px; --s-3: 24px;  --s-4: 40px;
+  --s-5: 64px;  --s-6: 96px; --s-7: 128px; --s-8: 160px; --s-9: 200px;
+
+  /* Layout */
+  --maxw: 1280px;
+  --pad: clamp(24px, 6vw, 96px);
+  --col-gap: clamp(20px, 2vw, 32px);
+  --row-gap: clamp(80px, 12vh, 160px);
+  --radius: clamp(14px, 1.3vw, 20px);
+  --section-pad: clamp(96px, 14vh, 200px);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  color-scheme: light;
+}
+
+/* ---- Reset / base ------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+img, video { display: block; max-width: 100%; }
+
+a { color: inherit; text-decoration: none; }
+
+ul { list-style: none; margin: 0; padding: 0; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding-inline: var(--pad);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hairline {
+  height: 1px;
+  background: var(--line);
+  border: 0;
+  transform-origin: left center;
+}
+
+/* Skip link */
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 10px 16px;
+  z-index: 100;
+  border-radius: 0 0 6px 0;
+}
+.skip:focus { left: 0; }
+
+/* ======================================================================
+   Masthead / hero
+   ====================================================================== */
+
+.masthead { padding-top: clamp(24px, 6vh, 48px); }
+
+.masthead__bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.masthead__name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--fs-display);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  margin: 0;
+}
+
+.masthead__nav {
+  display: flex;
+  gap: var(--s-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.masthead__nav a { transition: color 0.25s var(--ease-out); }
+.masthead__nav a:hover { color: var(--ink); }
+
+.masthead__meta { margin: var(--s-2) 0 0; }
+
+.masthead__meta .dot { color: var(--accent); }
+
+.masthead__rule { margin: var(--s-3) 0 0; }
+
+/* Hero: mobile-first stacked; splits into a 12-col hang at desktop */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(28px, 5vh, 44px);
+  margin-top: clamp(40px, 7vh, 80px);
+  padding-bottom: var(--section-pad);
+}
+
+.reel {
+  position: relative;
+  width: min(640px, 100%);
+  aspect-ratio: 16 / 9;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--placeholder);
+  box-shadow: inset 0 0 0 1px rgba(23, 21, 15, 0.06);
+}
+.reel video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.reel__tag {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-index);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+.reel__sound {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(23, 21, 15, 0.55);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: var(--fs-index);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.25s var(--ease-out);
+}
+.reel__sound:hover { background: rgba(23, 21, 15, 0.8); }
+
+.hero__statement {
+  max-width: 30ch;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-lead);
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--col-gap);
+    align-items: start;
+  }
+  .reel { grid-column: 1 / span 7; }
+  .hero__statement {
+    grid-column: 9 / span 4;
+    max-width: none;
+    align-self: end;
+  }
+}
+
+/* ======================================================================
+   Selected work — the asymmetric hang
+   ====================================================================== */
+
+.work { padding-block: 0 var(--section-pad); }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-bottom: clamp(40px, 7vh, 80px);
+}
+.section-head__title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--fs-h2);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.section-head__count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.work__grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--col-gap);
+  row-gap: var(--row-gap);
+  align-items: start;
+}
+
+.work__item { grid-column: 1 / -1; }   /* mobile default: full width */
+
+.work__link { display: block; color: inherit; }
+
+/* Rounded frame that masks the hover scale */
+.frame {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--ar, 1);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--placeholder);
+}
+.frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.92);
+  transform: scale(1.0);
+  transition: transform 0.6s cubic-bezier(0.2, 0.6, 0.2, 1),
+              filter 0.6s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+/* Wall-label caption underneath */
+.caption {
+  margin-top: 16px;
+  display: grid;
+  gap: 5px;
+}
+.caption__index {
+  font-family: var(--font-mono);
+  font-size: var(--fs-index);
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  transition: color 0.3s var(--ease-out);
+}
+.caption__title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+.caption__role {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 0.3s var(--ease-out);
+}
+.caption__role .arrow {
+  display: inline-block;
+  margin-left: 6px;
+  transition: transform 0.3s var(--ease-out);
+}
+
+/* Hover / focus — "footage comes up" */
+@media (hover: hover) and (pointer: fine) {
+  .work__link:hover .frame img,
+  .work__link:focus-visible .frame img {
+    transform: scale(1.035);
+    filter: saturate(1.06);
+  }
+  .work__link:hover .caption__index,
+  .work__link:focus-visible .caption__index { color: var(--accent); }
+  .work__link:hover .caption__role,
+  .work__link:focus-visible .caption__role { color: var(--ink); }
+  .work__link:hover .caption__role .arrow,
+  .work__link:focus-visible .caption__role .arrow { transform: translate(3px, -3px); }
+
+  /* Curatorial spotlight — dim siblings so one work is lit at a time */
+  .work__grid:hover .work__item { transition: opacity 0.45s var(--ease-out); }
+  .work__grid:hover .work__item:not(:hover) { opacity: 0.5; }
+}
+
+/* ======================================================================
+   About
+   ====================================================================== */
+
+.about { padding-bottom: var(--section-pad); }
+.about__inner { max-width: 62ch; }
+.about__lede {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-lead);
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--s-4);
+}
+.about__body p { margin: 0 0 var(--s-3); }
+.about__body p:last-child { margin-bottom: 0; }
+.about__body em { font-style: italic; }
+
+/* ======================================================================
+   Footer / colophon
+   ====================================================================== */
+
+.colophon {
+  border-top: 1px solid var(--line);
+  padding-block: var(--s-5) var(--s-5);
+}
+.colophon__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.colophon__name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--fs-h2);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.colophon__meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: right;
+  line-height: 1.7;
+}
+.colophon__meta a { text-decoration: underline; text-underline-offset: 3px; }
+.colophon__meta a:hover { color: var(--ink); }
+
+/* Running corner folio */
+.folio {
+  position: fixed;
+  right: clamp(16px, 4vw, 40px);
+  bottom: clamp(16px, 4vw, 40px);
+  font-family: var(--font-mono);
+  font-size: var(--fs-index);
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  mix-blend-mode: difference;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ======================================================================
+   Responsive spans — the hang at each breakpoint
+   ====================================================================== */
+
+/* Tablet: two equal columns, source order preserved */
+@media (min-width: 640px) {
+  .work__item { grid-column: span 6; }
+}
+
+/* Desktop: the asymmetric hang keyed to native aspect ratio + offsets */
+@media (min-width: 1024px) {
+  .work__item:nth-child(1)  { grid-column: 1 / span 5;  }  /* Sign Off — square */
+  .work__item:nth-child(2)  { grid-column: 8 / span 4;  }  /* Unbelievable — portrait */
+  .work__item:nth-child(3)  { grid-column: 3 / span 5;  }  /* RuPaul — square */
+  .work__item:nth-child(4)  { grid-column: 9 / span 4;  }  /* Trixie — portrait */
+  .work__item:nth-child(5)  { grid-column: 1 / span 4;  }  /* No You Shut Up — portrait */
+  .work__item:nth-child(6)  { grid-column: 7 / span 4;  }  /* Not Today Bianca — portrait */
+  .work__item:nth-child(7)  { grid-column: 4 / span 7;  }  /* Hoppus — landscape */
+  .work__item:nth-child(8)  { grid-column: 5 / span 4;  }  /* Actors Roundtable — portrait */
+  .work__item:nth-child(9)  { grid-column: 1 / span 5;  }  /* Best Week Ever — square */
+  .work__item:nth-child(10) { grid-column: 8 / span 5;  }  /* Wake Up — square */
+}
+
+/* ======================================================================
+   Hero entrance — pure CSS, runs once on load (no JS, no flash)
+   ====================================================================== */
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes draw {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes settle {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+.masthead__name  { animation: rise 0.7s var(--ease-out) both; }
+.masthead__meta  { animation: rise 0.7s var(--ease-out) 0.07s both; }
+.masthead__rule  { animation: draw 0.6s var(--ease-out) 0.14s both; }
+.hero .reel      { animation: settle 0.9s var(--ease-out) 0.2s both; }
+.hero__statement { animation: rise 0.7s var(--ease-out) 0.28s both; }
+
+/* ======================================================================
+   Scroll-reveal (progressive enhancement; visible by default without JS).
+   main.js adds .pre only to below-the-fold items, so nothing already on
+   screen ever hides — no flash.
+   ====================================================================== */
+
+.reveal {
+  transition: opacity 0.72s var(--ease-out), transform 0.72s var(--ease-out);
+}
+.reveal.pre { opacity: 0; transform: translateY(20px); }
+.reveal.in-view { opacity: 1; transform: none; }
+
+/* ======================================================================
+   Reduced motion — collapse everything to plain fades / nothing
+   ====================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal.pre { opacity: 1; transform: none; }
+  .masthead__name, .masthead__meta, .masthead__rule,
+  .hero .reel, .hero__statement { animation: none; }
+  .frame img { transition: none; }
+  .work__grid:hover .work__item:not(:hover) { opacity: 1; }
+}

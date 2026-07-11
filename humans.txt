@@ -1,0 +1,9 @@
+/* TEAM */
+  Site owner: Chris Portka
+  Contact: chrisportka [at] gmail.com
+
+/* SITE */
+  Subject: Portfolio of Kevin Haulihan — director / writer / producer
+  Standards: HTML5, CSS3
+  Components: Hand-written static site, no framework
+  Hosted on: GitHub Pages

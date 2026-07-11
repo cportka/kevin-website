@@ -1,0 +1,16 @@
+name: CI
+
+# Runs the test suite on every push and PR: SemVer + version-sync (package.json / CHANGELOG /
+# README agree), referenced-asset integrity, and required-meta/HTML sanity checks.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run test suite
+        run: bash tests/run-tests.sh

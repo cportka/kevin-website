@@ -1,0 +1,68 @@
+name: Deploy to GitHub Pages
+
+# Static site — no build step. On every push to the live branch we run the test suite
+# (fail-closed: a broken build never deploys), assemble a clean _site/ tree, and publish it
+# to GitHub Pages via the official Pages Actions pipeline.
+
+on:
+  push:
+    branches:
+      - main
+      - claude/kevin-website-redesign-ajk052
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run test suite
+        run: bash tests/run-tests.sh
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          # Enable Pages (build type = GitHub Actions) via the API on first run,
+          # so the site deploys without a manual settings toggle.
+          enablement: true
+
+      - name: Assemble deployable site
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          # Copy only the files that make up the public site.
+          for item in index.html 404.html favicon.svg apple-touch-icon.png \
+                      site.webmanifest robots.txt sitemap.xml llms.txt humans.txt \
+                      assets .well-known; do
+            if [ -e "$item" ]; then cp -r "$item" _site/; else echo "skip missing $item"; fi
+          done
+          # Disable Jekyll so files/dirs beginning with _ or . are served verbatim.
+          touch _site/.nojekyll
+          echo "Assembled site:"; find _site -maxdepth 2 -type f | sort
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

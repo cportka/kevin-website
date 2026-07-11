@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Page not found — Kevin Haulihan</title>
+  <meta name="robots" content="noindex" />
+  <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/kevin-website/favicon.svg" type="image/svg+xml" />
+  <!-- Self-contained styles so this page renders correctly at any requested path. -->
+  <style>
+    :root {
+      --ink: #17150f; --muted: #78746b; --accent: #c8452a; --line: #e9e5dc;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: #fff; color: var(--ink);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      display: grid; place-items: center; padding: 40px;
+    }
+    .wrap { max-width: 520px; text-align: center; }
+    .code {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); margin: 0 0 20px;
+    }
+    h1 {
+      font-family: "Schibsted Grotesk", "Inter", sans-serif;
+      font-weight: 500; font-size: clamp(2rem, 6vw, 3.25rem);
+      line-height: 1.05; letter-spacing: -0.03em; margin: 0 0 16px;
+    }
+    p { font-size: 1.0625rem; line-height: 1.6; color: var(--muted); margin: 0 0 28px; }
+    .home {
+      display: inline-block;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.8125rem; letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--ink); text-decoration: none;
+      border-bottom: 1px solid var(--line); padding-bottom: 4px;
+      transition: border-color 0.25s ease;
+    }
+    .home:hover { border-color: var(--accent); }
+    .home .arrow { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="code">Error 404</p>
+    <h1>This page has been cut.</h1>
+    <p>The link you followed doesn't lead anywhere — try the work instead.</p>
+    <a class="home" href="/kevin-website/">Back to the reel <span class="arrow" aria-hidden="true">↗</span></a>
+  </main>
+</body>
+</html>

@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-07-12
+
+### Added
+- **Dark mode** with a top-right toggle in the masthead. A warm "black-box"
+  palette (near-black ground, bone-white ink, brighter ember accent) mirrors the
+  light "white-cube" design. The choice persists (`localStorage`) and defaults to
+  the visitor's OS preference; an inline-free, same-origin head script applies the
+  theme before first paint so there's no flash, and toggling crossfades (respecting
+  `prefers-reduced-motion`). Browser chrome (`theme-color`) tracks the active theme.
+
+### Changed
+- Tightened the Selected Work grid's vertical rhythm (reduced row gap and section
+  padding) so the gallery reads as a cohesive hang with less negative space.
+
+[1.1.0]: https://github.com/cportka/kevin-website/releases/tag/v1.1.0
+
 ## [1.0.0] - 2026-07-11
 
 ### Added

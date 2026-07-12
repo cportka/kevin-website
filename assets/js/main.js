@@ -94,7 +94,40 @@
     }
   }
 
-  /* ---- 3. Running corner folio (001 → 010) --------------------------- */
+  /* ---- 3. Theme toggle ---------------------------------------------- */
+  // theme.js already set data-theme before paint; here we wire the button,
+  // persist the choice, and keep the browser chrome (theme-color) in sync.
+  var root = document.documentElement;
+  var toggle = document.getElementById("theme-toggle");
+  var themeMeta = document.querySelector('meta[name="theme-color"]');
+
+  function currentTheme() {
+    return root.getAttribute("data-theme") === "dark" ? "dark" : "light";
+  }
+  function applyTheme(theme, animate) {
+    if (animate && !reduceMotion) {
+      root.classList.add("theme-transition");
+      window.setTimeout(function () { root.classList.remove("theme-transition"); }, 420);
+    }
+    root.setAttribute("data-theme", theme);
+    if (themeMeta) themeMeta.setAttribute("content", theme === "dark" ? "#131210" : "#ffffff");
+    if (toggle) {
+      var goingDark = theme === "light"; // button switches to the *other* theme
+      toggle.setAttribute("aria-label", goingDark ? "Switch to dark theme" : "Switch to light theme");
+      toggle.setAttribute("title", goingDark ? "Dark mode" : "Light mode");
+      toggle.setAttribute("aria-pressed", String(theme === "dark"));
+    }
+  }
+  if (toggle) {
+    applyTheme(currentTheme(), false); // sync labels/meta to the pre-painted theme
+    toggle.addEventListener("click", function () {
+      var next = currentTheme() === "dark" ? "light" : "dark";
+      applyTheme(next, true);
+      try { localStorage.setItem("theme", next); } catch (e) {}
+    });
+  }
+
+  /* ---- 4. Running corner folio (001 → 010) --------------------------- */
   var folio = document.querySelector(".folio");
   var items = document.querySelectorAll(".work__item");
   if (folio && items.length && hasIO) {

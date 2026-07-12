@@ -40,13 +40,31 @@
   --maxw: 1280px;
   --pad: clamp(24px, 6vw, 96px);
   --col-gap: clamp(20px, 2vw, 32px);
-  --row-gap: clamp(80px, 12vh, 160px);
+  --row-gap: clamp(36px, 5vh, 64px);
   --radius: clamp(14px, 1.3vw, 20px);
-  --section-pad: clamp(96px, 14vh, 200px);
+  --section-pad: clamp(88px, 12vh, 168px);
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
+  /* Frame separator ring — flips with theme (dark ink on white / light on black) */
+  --frame-inset: rgba(23, 21, 15, 0.06);
+
   color-scheme: light;
+}
+
+/* ---- Dark theme — "black box" gallery at night --------------------------
+   Set on <html data-theme="dark"> by assets/js/theme.js before first paint
+   (no flash) and toggled by the masthead control. Warm near-black ground,
+   bone-white ink, a brighter ember so the signal still reads on black. */
+:root[data-theme="dark"] {
+  --bg:      #131210;
+  --ink:     #f3f0e8;
+  --muted:   #9d978b;
+  --line:    #2c2a24;
+  --accent:  #e2664a;
+  --placeholder: #201e19;
+  --frame-inset: rgba(244, 241, 234, 0.10);
+  color-scheme: dark;
 }
 
 /* ---- Reset / base ------------------------------------------------------- */
@@ -123,10 +141,17 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 .masthead__bar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--s-3);
   flex-wrap: wrap;
+}
+
+/* Right-side group: section nav + theme toggle, top-right of the site */
+.masthead__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
 }
 
 .masthead__name {
@@ -150,6 +175,45 @@ ul { list-style: none; margin: 0; padding: 0; }
 .masthead__nav a { transition: color 0.25s var(--ease-out); }
 .masthead__nav a:hover { color: var(--ink); }
 
+/* Theme toggle — minimal icon button; shows the icon for the action it does
+   (moon in light mode → go dark, sun in dark mode → go light) */
+.theme-toggle {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.25s var(--ease-out), border-color 0.25s var(--ease-out),
+              background 0.25s var(--ease-out);
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--ink); }
+.theme-toggle__icon { width: 18px; height: 18px; display: block; }
+.theme-toggle__icon--sun { display: none; }
+:root[data-theme="dark"] .theme-toggle__icon--moon { display: none; }
+:root[data-theme="dark"] .theme-toggle__icon--sun { display: block; }
+
+/* Brief global crossfade applied only during an explicit theme toggle
+   (JS adds .theme-transition to <html> for ~400ms). Never on first paint. */
+@media (prefers-reduced-motion: no-preference) {
+  :root.theme-transition,
+  :root.theme-transition *,
+  :root.theme-transition *::before,
+  :root.theme-transition *::after {
+    transition: background-color 0.35s var(--ease-out),
+                color 0.35s var(--ease-out),
+                border-color 0.35s var(--ease-out),
+                fill 0.35s var(--ease-out) !important;
+  }
+}
+
 .masthead__meta { margin: var(--s-2) 0 0; }
 
 .masthead__meta .dot { color: var(--accent); }
@@ -172,7 +236,7 @@ ul { list-style: none; margin: 0; padding: 0; }
   border-radius: 20px;
   overflow: hidden;
   background: var(--placeholder);
-  box-shadow: inset 0 0 0 1px rgba(23, 21, 15, 0.06);
+  box-shadow: inset 0 0 0 1px var(--frame-inset);
 }
 .reel video {
   width: 100%;
@@ -431,16 +495,18 @@ ul { list-style: none; margin: 0; padding: 0; }
   .work__item { grid-column: span 6; }
 }
 
-/* Desktop: the asymmetric hang keyed to native aspect ratio + offsets */
+/* Desktop: an asymmetric hang keyed to native aspect ratio, but paired two to
+   a row (with offset start columns for rhythm) so the wall reads as a cohesive
+   block instead of drifting apart with lone items and wide empty bands. */
 @media (min-width: 1024px) {
   .work__item:nth-child(1)  { grid-column: 1 / span 5;  }  /* Sign Off — square */
   .work__item:nth-child(2)  { grid-column: 8 / span 4;  }  /* Unbelievable — portrait */
-  .work__item:nth-child(3)  { grid-column: 3 / span 5;  }  /* RuPaul — square */
-  .work__item:nth-child(4)  { grid-column: 9 / span 4;  }  /* Trixie — portrait */
-  .work__item:nth-child(5)  { grid-column: 1 / span 4;  }  /* No You Shut Up — portrait */
-  .work__item:nth-child(6)  { grid-column: 7 / span 4;  }  /* Not Today Bianca — portrait */
-  .work__item:nth-child(7)  { grid-column: 4 / span 7;  }  /* Hoppus — landscape */
-  .work__item:nth-child(8)  { grid-column: 5 / span 4;  }  /* Actors Roundtable — portrait */
+  .work__item:nth-child(3)  { grid-column: 2 / span 5;  }  /* RuPaul — square */
+  .work__item:nth-child(4)  { grid-column: 8 / span 5;  }  /* Trixie — portrait */
+  .work__item:nth-child(5)  { grid-column: 1 / span 4;  }  /* No You Shut Up — tall */
+  .work__item:nth-child(6)  { grid-column: 6 / span 4;  }  /* Not Today Bianca — tall */
+  .work__item:nth-child(7)  { grid-column: 1 / span 7;  }  /* Hoppus — landscape */
+  .work__item:nth-child(8)  { grid-column: 9 / span 4;  }  /* Actors Roundtable — portrait */
   .work__item:nth-child(9)  { grid-column: 1 / span 5;  }  /* Best Week Ever — square */
   .work__item:nth-child(10) { grid-column: 8 / span 5;  }  /* Wake Up — square */
 }

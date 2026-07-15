@@ -47,32 +47,13 @@
     }, 4000);
   }
 
-  /* ---- 2. Reel: sound toggle + pause when off-screen ----------------- */
+  /* ---- 2. Reel: pause when off-screen --------------------------------- */
+  // The current reel has no audio track, so there is no sound/mute control;
+  // restore one here if a reel with sound ships later.
   var reel = document.querySelector(".reel");
   var video = reel ? reel.querySelector("video") : null;
 
   if (reel && video) {
-    var btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "reel__sound";
-
-    function syncLabel() {
-      var muted = video.muted;
-      btn.textContent = muted ? "Sound" : "Mute";
-      btn.setAttribute("aria-pressed", String(!muted));
-      btn.setAttribute("aria-label", muted ? "Unmute showreel" : "Mute showreel");
-    }
-    btn.addEventListener("click", function () {
-      video.muted = !video.muted;
-      if (!video.muted) {
-        var p = video.play();
-        if (p && typeof p.catch === "function") { p.catch(function () {}); }
-      }
-      syncLabel();
-    });
-    syncLabel();
-    reel.appendChild(btn);
-
     // Pause the muted loop when it scrolls out of view (saves battery/CPU).
     if (hasIO) {
       var playIO = new IntersectionObserver(function (entries) {
@@ -204,19 +185,24 @@
     }
   }
 
-  /* ---- 5. Running corner folio (001 → 010) --------------------------- */
+  /* ---- 5. Corner counter: vertical site position (000 → 100) --------- */
+  // 000 at the very top of the page, 100 at the very bottom.
   var folio = document.querySelector(".folio");
-  var items = document.querySelectorAll(".work__item");
-  if (folio && items.length && hasIO) {
-    var folioIO = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          var idxEl = entry.target.querySelector(".caption__index");
-          var idx = idxEl ? idxEl.textContent.trim() : "";
-          if (idx) { folio.textContent = "0" + idx + " / 010"; }
-        }
-      });
-    }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
-    items.forEach(function (item) { folioIO.observe(item); });
+  if (folio) {
+    var folioTicking = false;
+    var updateFolio = function () {
+      folioTicking = false;
+      var doc = document.documentElement;
+      var max = doc.scrollHeight - window.innerHeight;
+      var pct = max > 0 ? Math.round((window.scrollY || doc.scrollTop || 0) / max * 100) : 0;
+      if (pct < 0) { pct = 0; } else if (pct > 100) { pct = 100; }
+      folio.textContent = ("00" + pct).slice(-3) + " / 100";
+    };
+    var queueFolio = function () {
+      if (!folioTicking) { folioTicking = true; requestAnimationFrame(updateFolio); }
+    };
+    window.addEventListener("scroll", queueFolio, { passive: true });
+    window.addEventListener("resize", queueFolio, { passive: true });
+    updateFolio();
   }
 })();

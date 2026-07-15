@@ -529,12 +529,9 @@ html.intro-pending .intro {
   width: 100%; height: 100%; /* of the viewport; matches the JS start keyframe */
   z-index: 60;               /* over folio (5); under the skip link (100) */
   overflow: hidden;
-  background: var(--bg);
-}
-.intro picture,
-.intro img {
-  width: 100%; height: 100%;
-  object-fit: cover;
+  /* First paint of the hue cycle; main.js animates
+     black -> purple -> blue -> red -> orange -> white over the collapse. */
+  background: #000;
 }
 .intro__word {
   position: absolute;
@@ -545,8 +542,9 @@ html.intro-pending .intro {
   font-weight: 500;
   font-size: clamp(1.75rem, 4vw, 3rem);
   letter-spacing: -0.02em;
+  /* Solid white — legible over the dark half of the hue cycle; it fades out
+     (main.js) before the cycle reaches orange/white. */
   color: #fff;
-  mix-blend-mode: difference;
   pointer-events: none;
 }
 

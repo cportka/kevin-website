@@ -164,6 +164,19 @@
             { duration: 320, delay: 420, easing: "ease-out", fill: "forwards" });
         }
 
+        // Projector warm-up: one continuous color track spanning the hold
+        // (the collapse's 450ms delay) plus the 850ms collapse, so the cycle
+        // black -> purple -> blue -> red -> orange -> white completes exactly
+        // as the panel lands on the reel's frame.
+        intro.animate([
+          { backgroundColor: "#000000", offset: 0    },
+          { backgroundColor: "#4c1d95", offset: 0.22 },
+          { backgroundColor: "#1d4ed8", offset: 0.42 },
+          { backgroundColor: "#dc2626", offset: 0.62 },
+          { backgroundColor: "#f97316", offset: 0.82 },
+          { backgroundColor: "#ffffff", offset: 1    }
+        ], { duration: 1300, easing: "linear", fill: "forwards" });
+
         var collapse = intro.animate([
           { top: "0px", left: "0px", width: vw + "px", height: vh + "px", borderRadius: "0px" },
           { top: rect.top + "px", left: rect.left + "px",

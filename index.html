@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kevin Haulihan — Director / Writer / Producer</title>
-  <meta name="description" content="Kevin Haulihan is an Emmy-nominated director, writer, and producer working across broadcast, new media, and scripted podcasts — with LA Times Studios and formerly World of Wonder. Selected work and reel." />
+  <meta name="description" content="Kevin Haulihan is an Emmy-winning director, writer, and producer working across broadcast, new media, and scripted podcasts — with LA Times Studios and formerly World of Wonder. Selected work and reel." />
   <meta name="color-scheme" content="light dark" />
   <meta name="theme-color" content="#ffffff" />
   <link rel="canonical" href="https://cportka.github.io/kevin-website/" />
@@ -24,14 +24,14 @@
   <!-- Social / sharing -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Kevin Haulihan — Director / Writer / Producer" />
-  <meta property="og:description" content="Emmy-nominated director, writer, and producer across broadcast, new media, and scripted podcasts. Selected work and reel." />
+  <meta property="og:description" content="Emmy-winning director, writer, and producer across broadcast, new media, and scripted podcasts. Selected work and reel." />
   <meta property="og:url" content="https://cportka.github.io/kevin-website/" />
   <meta property="og:image" content="https://cportka.github.io/kevin-website/assets/social/og.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Kevin Haulihan — Director / Writer / Producer" />
-  <meta name="twitter:description" content="Emmy-nominated director, writer, and producer across broadcast, new media, and scripted podcasts." />
+  <meta name="twitter:description" content="Emmy-winning director, writer, and producer across broadcast, new media, and scripted podcasts." />
   <meta name="twitter:image" content="https://cportka.github.io/kevin-website/assets/social/og.png" />
 
   <!-- Fonts -->
@@ -49,7 +49,8 @@
     "name": "Kevin Haulihan",
     "url": "https://cportka.github.io/kevin-website/",
     "jobTitle": "Director, Writer, Producer",
-    "description": "Emmy-nominated director, writer, and producer working across linear broadcast, new media, and the scripted-podcast space.",
+    "award": "Emmy Award",
+    "description": "Emmy-winning director, writer, and producer working across linear broadcast, new media, and the scripted-podcast space.",
     "image": "https://cportka.github.io/kevin-website/assets/social/og.png",
     "worksFor": { "@type": "Organization", "name": "LA Times Studios" },
     "knowsAbout": ["Television production", "Branded content", "Scripted podcasts", "Directing", "Writing", "Producing"]
@@ -57,6 +58,18 @@
   </script>
 </head>
 <body>
+  <!-- Intro loading screen: starts full-viewport and collapses onto the reel's
+       frame (see main.js). Only displayed while <html> has .intro-pending, which
+       theme.js sets pre-paint (JS-on, motion-ok only) — so no-JS and
+       reduced-motion visitors never see it. -->
+  <div class="intro" id="intro" aria-hidden="true">
+    <picture>
+      <source type="image/webp" srcset="assets/video/reel-poster.webp" />
+      <img src="assets/video/reel-poster.jpg" alt="" width="1920" height="1080" decoding="async" />
+    </picture>
+    <span class="intro__word">Kevin Haulihan</span>
+  </div>
+
   <a class="skip" href="#work">Skip to work</a>
 
   <div class="folio" aria-hidden="true">001 / 010</div>
@@ -81,7 +94,7 @@
         </button>
       </div>
     </div>
-    <p class="masthead__meta eyebrow">Emmy-nominated Director <span class="dot">·</span> Writer <span class="dot">·</span> Producer <span class="dot">—</span> Los Angeles</p>
+    <p class="masthead__meta eyebrow">Emmy-winning Director <span class="dot">·</span> Writer <span class="dot">·</span> Producer <span class="dot">—</span> Los Angeles</p>
     <hr class="masthead__rule hairline" />
   </header>
 
@@ -298,7 +311,7 @@
       <div class="about__inner reveal">
         <p class="about__lede">Kevin Haulihan prioritizes storytelling that surprises and moves viewers while entertaining them — moving deftly between linear broadcast and new media, long form and short.</p>
         <div class="about__body">
-          <p>With LA Times Studios, Kevin has developed and created Emmy-nominated content for major brands like Apple, Amazon Music, Disney, and Pfizer — including work in the scripted-podcast space.</p>
+          <p>With LA Times Studios, Kevin has developed and created Emmy-winning content for major brands like Apple, Amazon Music, Disney, and Pfizer — including work in the scripted-podcast space.</p>
           <p>Prior to this, he was a Director of Development for World of Wonder Productions, where he developed series in both scripted and unscripted across multiple formats.</p>
           <p>Other credits include <em>RuPaul's Drag Race</em>, <em>Best Week Ever</em>, <em>No, You Shut Up!</em>, <em>Hoppus on Music</em>, and <em>The Trixie &amp; Katya Show</em>.</p>
         </div>

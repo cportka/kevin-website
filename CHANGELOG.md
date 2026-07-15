@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-07-15
+
+### Added
+- **Intro loading screen**: on load, a full-viewport panel (the reel's poster frame
+  with a centered wordmark) collapses down onto the reel's frame, then lifts and
+  hands playback off to the video. Armed before first paint by the same-origin
+  head script (no flash, CSP intact), it plays only when JS is on and motion is
+  allowed — no-JS and reduced-motion visitors get the plain page — and carries
+  two safety nets so the overlay can never trap the page.
+
+### Changed
+- Corrected Kevin's credit across the site: **Emmy-winning** (previously
+  "Emmy-nominated") — masthead, meta/OG/Twitter descriptions, bio, `llms.txt`,
+  and a regenerated social share image; added `"award": "Emmy Award"` to the
+  Person JSON-LD.
+
 ## [1.1.0] - 2026-07-12
 
 ### Added
@@ -17,8 +33,6 @@ All notable changes to this project are documented here. The format is based on
 ### Changed
 - Tightened the Selected Work grid's vertical rhythm (reduced row gap and section
   padding) so the gallery reads as a cohesive hang with less negative space.
-
-[1.1.0]: https://github.com/cportka/kevin-website/releases/tag/v1.1.0
 
 ## [1.0.0] - 2026-07-11
 
@@ -44,4 +58,6 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.2.0]: https://github.com/cportka/kevin-website/releases/tag/v1.2.0
+[1.1.0]: https://github.com/cportka/kevin-website/releases/tag/v1.1.0
 [1.0.0]: https://github.com/cportka/kevin-website/releases/tag/v1.0.0

@@ -81,7 +81,9 @@
             // Only auto-resume the silent loop. If the viewer unmuted, don't
             // force playback on scroll-back (no gesture => audio would be
             // blocked or would blare); leave it for the button/gesture.
-            if (video.muted) {
+            // While the intro overlay holds the page, stay on the poster frame —
+            // the intro hands playback off when it lifts.
+            if (video.muted && !document.documentElement.classList.contains("intro-pending")) {
               var p = video.play();
               if (p && typeof p.catch === "function") { p.catch(function () {}); }
             }
@@ -127,7 +129,69 @@
     });
   }
 
-  /* ---- 4. Running corner folio (001 → 010) --------------------------- */
+  /* ---- 4. Intro: full-viewport panel collapses onto the reel --------- */
+  // theme.js armed html.intro-pending pre-paint (JS-on, motion-ok only), so the
+  // overlay is already covering the page. Here we measure the reel's frame and
+  // collapse the overlay onto it (WAAPI), then lift it and start the reel.
+  var intro = document.getElementById("intro");
+  if (intro && root.classList.contains("intro-pending")) {
+    var finishIntro = function () {
+      root.classList.remove("intro-pending");
+      if (intro.parentNode) { intro.parentNode.removeChild(intro); }
+      if (video && video.muted) {
+        var p = video.play();
+        if (p && typeof p.catch === "function") { p.catch(function () {}); }
+      }
+    };
+
+    if (reduceMotion || !intro.animate || !reel) {
+      finishIntro();
+    } else {
+      if (video) { video.pause(); } // hold the poster frame for a seamless hand-off
+
+      var introDone = false;
+      var startIntro = function () {
+        if (introDone) { return; }
+        introDone = true;
+
+        var rect = reel.getBoundingClientRect();
+        var vw = document.documentElement.clientWidth;
+        var vh = document.documentElement.clientHeight;
+
+        var word = intro.querySelector(".intro__word");
+        if (word && word.animate) {
+          word.animate([{ opacity: 1 }, { opacity: 0 }],
+            { duration: 320, delay: 420, easing: "ease-out", fill: "forwards" });
+        }
+
+        var collapse = intro.animate([
+          { top: "0px", left: "0px", width: vw + "px", height: vh + "px", borderRadius: "0px" },
+          { top: rect.top + "px", left: rect.left + "px",
+            width: rect.width + "px", height: rect.height + "px", borderRadius: "20px" }
+        ], { duration: 850, delay: 450, easing: "cubic-bezier(0.76, 0, 0.24, 1)", fill: "forwards" });
+
+        collapse.onfinish = function () {
+          var fade = intro.animate([{ opacity: 1 }, { opacity: 0 }],
+            { duration: 260, easing: "ease-out", fill: "forwards" });
+          fade.onfinish = finishIntro;
+        };
+
+        // Never trap the page if an animation stalls (theme.js also has a net).
+        setTimeout(function () {
+          if (root.classList.contains("intro-pending")) { finishIntro(); }
+        }, 3200);
+      };
+
+      // Measure once the web fonts have settled (they shift the reel's position);
+      // the timeout keeps the intro snappy if the font network request drags.
+      if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === "function") {
+        document.fonts.ready.then(startIntro, startIntro);
+      }
+      setTimeout(startIntro, 350);
+    }
+  }
+
+  /* ---- 5. Running corner folio (001 → 010) --------------------------- */
   var folio = document.querySelector(".folio");
   var items = document.querySelectorAll(".work__item");
   if (folio && items.length && hasIO) {

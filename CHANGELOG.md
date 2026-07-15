@@ -4,6 +4,34 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-07-15
+
+### Changed
+- **Selected Work hang rebuilt as a two-column editorial stack.** The old
+  row-based grid paired mismatched heights, leaving ragged, accidental-looking
+  offsets between rows. Now a wide left column and a narrow right column each
+  keep a perfectly uniform vertical rhythm, with the right column staggered
+  down once — every offset is systematic. Items were re-curated between the
+  columns (the landscape banner lives in the wide column) and renumbered to
+  read down the left (01-05) then down the right (06-10).
+- **Corner counter is now a site-position indicator (000 → 100)** — 000 at the
+  very top of the page, 100 at the very bottom — replacing the less useful
+  per-project folio. Updates via a passive, rAF-throttled scroll listener.
+
+- **First visit now defaults to the light theme** (the site's canonical look)
+  instead of following the OS preference; dark mode is an explicit choice via
+  the toggle, remembered across visits.
+- Evaluator-driven improvements (Portka app-website-evaluator now scores the
+  site 100/100 A across all seven dimensions): the pre-paint theme/intro
+  script is inlined and authorized by a CSP `sha256` hash — first paint no
+  longer waits on a blocking script request — with a new test enforcing that
+  the hash always matches the inline script; JSON-LD enriched to a graph of
+  `Person` + `WebSite` + an `ItemList` of the ten selected works.
+
+### Removed
+- The reel's Sound/Mute button — the current reel has no audio track. Restore
+  when a reel with sound ships.
+
 ## [1.3.0] - 2026-07-15
 
 ### Changed
@@ -67,6 +95,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.4.0]: https://github.com/cportka/kevin-website/releases/tag/v1.4.0
 [1.3.0]: https://github.com/cportka/kevin-website/releases/tag/v1.3.0
 [1.2.0]: https://github.com/cportka/kevin-website/releases/tag/v1.2.0
 [1.1.0]: https://github.com/cportka/kevin-website/releases/tag/v1.1.0

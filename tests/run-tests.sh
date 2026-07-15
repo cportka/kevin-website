@@ -161,7 +161,31 @@ else
   skip "python3 absent or no index.html — asset integrity check"
 fi
 
-# --- 6. Crawl / AI-readiness files present --------------------------------------------
+# --- 6. Inline-script CSP hash agrees with the script content --------------------------
+section "CSP — inline script hash consistency"
+if [[ $have_py -eq 1 && -f index.html ]]; then
+  if python3 - <<'PY2'
+import re, hashlib, base64, sys
+html = open("index.html", encoding="utf-8").read()
+# inline scripts = <script> tags with no src and no type attribute
+inlines = re.findall(r'<script>(.*?)</script>', html, re.S)
+csp = re.search(r'http-equiv="Content-Security-Policy"\s+content="([^"]+)"', html)
+hashes = re.findall(r"'sha256-([A-Za-z0-9+/=]+)'", csp.group(1)) if csp else []
+if not inlines and not hashes:
+    sys.exit(0)  # no inline scripts, no hashes — consistent
+if len(inlines) != len(hashes):
+    sys.exit(1)
+for body in inlines:
+    d = base64.b64encode(hashlib.sha256(body.encode()).digest()).decode()
+    if d not in hashes:
+        sys.exit(1)
+PY2
+  then pass "every inline <script> matches a CSP sha256 hash"; else fail "inline <script> content does not match the CSP sha256 hash(es)"; fi
+else
+  skip "python3 absent — CSP hash check"
+fi
+
+# --- 7. Crawl / AI-readiness files present --------------------------------------------
 section "Crawl / AI-readiness / brand files"
 for f in robots.txt sitemap.xml llms.txt site.webmanifest favicon.svg .well-known/security.txt .nojekyll; do
   if [[ -e "$f" ]]; then pass "present: $f"; else fail "missing: $f"; fi

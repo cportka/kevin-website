@@ -2,7 +2,7 @@
 
 Portfolio site for **Kevin Haulihan** — director / writer / producer.
 
-**Version:** 1.3.0
+**Version:** 1.4.0
 
 A hand-written static site (no framework), deployed to GitHub Pages via GitHub Actions. The
 design takes its cues from [mouthwash.studio](https://mouthwash.studio/): a white background,

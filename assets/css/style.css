@@ -255,27 +255,6 @@ ul { list-style: none; margin: 0; padding: 0; }
   mix-blend-mode: difference;
   pointer-events: none;
 }
-.reel__sound {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(23, 21, 15, 0.55);
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: var(--fs-index);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: background 0.25s var(--ease-out);
-}
-.reel__sound:hover { background: rgba(23, 21, 15, 0.8); }
 
 .hero__statement {
   max-width: 30ch;
@@ -331,15 +310,22 @@ ul { list-style: none; margin: 0; padding: 0; }
   color: var(--muted);
 }
 
-.work__grid {
+/* Two-column editorial hang: a wide column and a narrow column, each with a
+   uniform vertical rhythm; the narrow column is staggered down once. Every
+   offset is systematic — same gutter, same gap, one deliberate stagger. */
+.work__cols {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   column-gap: var(--col-gap);
-  row-gap: var(--row-gap);
   align-items: start;
 }
-
-.work__item { grid-column: 1 / -1; }   /* mobile default: full width */
+.work__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+  grid-column: 1 / -1;      /* mobile default: the two columns stack */
+}
+.work__col--b { margin-top: var(--row-gap); }  /* keep the rhythm between stacked columns */
 
 .work__link { display: block; color: inherit; }
 
@@ -416,8 +402,8 @@ ul { list-style: none; margin: 0; padding: 0; }
   .work__link:focus-visible .caption__role .arrow { transform: translate(3px, -3px); }
 
   /* Curatorial spotlight — dim siblings so one work is lit at a time */
-  .work__grid:hover .work__item { transition: opacity 0.45s var(--ease-out); }
-  .work__grid:hover .work__item:not(:hover) { opacity: 0.5; }
+  .work__cols:hover .work__item { transition: opacity 0.45s var(--ease-out); }
+  .work__cols:hover .work__item:not(:hover) { opacity: 0.5; }
 }
 
 /* ======================================================================
@@ -490,25 +476,17 @@ ul { list-style: none; margin: 0; padding: 0; }
    Responsive spans — the hang at each breakpoint
    ====================================================================== */
 
-/* Tablet: two equal columns, source order preserved */
+/* Tablet: two equal columns side by side, right column staggered */
 @media (min-width: 640px) {
-  .work__item { grid-column: span 6; }
+  .work__col--a { grid-column: 1 / span 6; }
+  .work__col--b { grid-column: 7 / span 6; margin-top: clamp(56px, 8vh, 96px); }
 }
 
-/* Desktop: an asymmetric hang keyed to native aspect ratio, but paired two to
-   a row (with offset start columns for rhythm) so the wall reads as a cohesive
-   block instead of drifting apart with lone items and wide empty bands. */
+/* Desktop: wide left column (the landscape banner lives here), narrow right
+   column of portraits/squares, separated by an empty gutter column. */
 @media (min-width: 1024px) {
-  .work__item:nth-child(1)  { grid-column: 1 / span 5;  }  /* Sign Off — square */
-  .work__item:nth-child(2)  { grid-column: 8 / span 4;  }  /* Unbelievable — portrait */
-  .work__item:nth-child(3)  { grid-column: 2 / span 5;  }  /* RuPaul — square */
-  .work__item:nth-child(4)  { grid-column: 8 / span 5;  }  /* Trixie — portrait */
-  .work__item:nth-child(5)  { grid-column: 1 / span 4;  }  /* No You Shut Up — tall */
-  .work__item:nth-child(6)  { grid-column: 6 / span 4;  }  /* Not Today Bianca — tall */
-  .work__item:nth-child(7)  { grid-column: 1 / span 7;  }  /* Hoppus — landscape */
-  .work__item:nth-child(8)  { grid-column: 9 / span 4;  }  /* Actors Roundtable — portrait */
-  .work__item:nth-child(9)  { grid-column: 1 / span 5;  }  /* Best Week Ever — square */
-  .work__item:nth-child(10) { grid-column: 8 / span 5;  }  /* Wake Up — square */
+  .work__col--a { grid-column: 1 / span 6; }
+  .work__col--b { grid-column: 8 / span 5; margin-top: clamp(96px, 12vh, 150px); }
 }
 
 /* ======================================================================
@@ -608,5 +586,5 @@ html.intro-pending .hero__statement { animation-play-state: paused; }
   .masthead__name, .masthead__meta, .masthead__rule,
   .hero .reel, .hero__statement { animation: none; }
   .frame img { transition: none; }
-  .work__grid:hover .work__item:not(:hover) { opacity: 1; }
+  .work__cols:hover .work__item:not(:hover) { opacity: 1; }
 }

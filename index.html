@@ -9,12 +9,43 @@
   <meta name="theme-color" content="#ffffff" />
   <link rel="canonical" href="https://cportka.github.io/kevin-website/" />
 
-  <!-- Set the theme before first paint (stored choice → system preference) to
-       avoid a flash. Same-origin file so it satisfies script-src 'self'. -->
-  <script src="assets/js/theme.js"></script>
+  <!-- Pre-paint setup (theme + intro arming), inlined so first paint needs no
+       blocking network request; authorized by the CSP sha256 hash below (the
+       test suite verifies the hash matches this exact script content). -->
+  <script>
+/* Runs in <head> before first paint. Two jobs, both flash-sensitive:
+   1) Resolve the theme (stored choice → light default) so the page
+      never paints in the wrong theme.
+   2) Arm the intro loading screen (html.intro-pending shows the full-viewport
+      overlay; main.js collapses it onto the reel). Armed only when JS runs and
+      motion is allowed, so no-JS / reduced-motion visitors get the plain page.
+   Kept tiny and dependency-free. */
+(function () {
+  var root = document.documentElement;
+  try {
+    var stored = localStorage.getItem("theme");
+    // First visit defaults to LIGHT (the site's canonical look); dark is an
+    // explicit choice via the toggle, remembered across visits.
+    var theme = (stored === "light" || stored === "dark") ? stored : "light";
+    root.setAttribute("data-theme", theme);
+  } catch (e) {
+    root.setAttribute("data-theme", "light");
+  }
+
+  try {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduce) {
+      root.classList.add("intro-pending");
+      // Safety net: never leave the overlay locking the page (e.g. main.js
+      // failed to load). main.js normally removes the class well before this.
+      setTimeout(function () { root.classList.remove("intro-pending"); }, 4000);
+    }
+  } catch (e) { /* no intro — page renders normally */ }
+})();
+</script>
 
   <!-- Content Security Policy: same-origin everything except Google Fonts (styles + fonts). No third-party scripts. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; media-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'sha256-b2+z10LmIhz/qp0BA2FHoUbH1+SWBi2CcvWBu0zI+gU='; media-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'" />
 
   <!-- Icons / manifest -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -45,15 +76,135 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "Kevin Haulihan",
-    "url": "https://cportka.github.io/kevin-website/",
-    "jobTitle": "Director, Writer, Producer",
-    "award": "Emmy Award",
-    "description": "Emmy-winning director, writer, and producer working across linear broadcast, new media, and the scripted-podcast space.",
-    "image": "https://cportka.github.io/kevin-website/assets/social/og.png",
-    "worksFor": { "@type": "Organization", "name": "LA Times Studios" },
-    "knowsAbout": ["Television production", "Branded content", "Scripted podcasts", "Directing", "Writing", "Producing"]
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "https://cportka.github.io/kevin-website/#kevin",
+        "name": "Kevin Haulihan",
+        "url": "https://cportka.github.io/kevin-website/",
+        "jobTitle": "Director, Writer, Producer",
+        "award": "Emmy Award",
+        "description": "Emmy-winning director, writer, and producer working across linear broadcast, new media, and the scripted-podcast space.",
+        "image": "https://cportka.github.io/kevin-website/assets/social/og.png",
+        "worksFor": {
+          "@type": "Organization",
+          "name": "LA Times Studios"
+        },
+        "knowsAbout": [
+          "Television production",
+          "Branded content",
+          "Scripted podcasts",
+          "Directing",
+          "Writing",
+          "Producing"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "url": "https://cportka.github.io/kevin-website/",
+        "name": "Kevin Haulihan — Director / Writer / Producer",
+        "about": {
+          "@id": "https://cportka.github.io/kevin-website/#kevin"
+        }
+      },
+      {
+        "@type": "ItemList",
+        "name": "Selected Work",
+        "numberOfItems": 10,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@type": "CreativeWork",
+              "name": "Sign Off",
+              "url": "https://podcasts.apple.com/us/podcast/minot/id1724277127?i=1000640961172"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "item": {
+              "@type": "CreativeWork",
+              "name": "The Trixie & Katya Show",
+              "url": "https://www.youtube.com/watch?v=DPwsJKg_yPk&list=PLZ_hwG6UuEJarhRlo4PF5bxgMmPUYtLa4"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "item": {
+              "@type": "CreativeWork",
+              "name": "Hoppus on Music",
+              "url": "https://www.youtube.com/watch?v=S-rryLI4vpA"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "item": {
+              "@type": "CreativeWork",
+              "name": "Not Today Bianca",
+              "url": "https://www.youtube.com/watch?v=LYpiOAy6zJE"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 5,
+            "item": {
+              "@type": "CreativeWork",
+              "name": "VH1 Best Week Ever",
+              "url": "https://vimeo.com/86646383"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 6,
+            "item": {
+              "@type": "CreativeWork",
+              "name": "Unbelievable Things",
+              "url": "https://studios.latimes.com/video/?q=unbelievable-things-medical-misinformation"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 7,
+            "item": {
+              "@type": "CreativeWork",
+              "name": "RuPaul's Drag Race",
+              "url": "https://www.youtube.com/watch?v=O5jmi7qT6uU&t=45s"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 8,
+            "item": {
+              "@type": "CreativeWork",
+              "name": "No, You Shut Up!",
+              "url": "https://www.youtube.com/watch?v=6vQHiSz8QKw"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 9,
+            "item": {
+              "@type": "CreativeWork",
+              "name": "Actors Roundtable",
+              "url": "https://youtu.be/ZU_B9C7qJc0?si=QYg9Qmcncf3yV2Gi"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 10,
+            "item": {
+              "@type": "CreativeWork",
+              "name": "Wake Up",
+              "url": "https://podcasts.apple.com/us/podcast/wake-up-a-slingshot-story/id1764152427?i=1000666328414"
+            }
+          }
+        ]
+      }
+    ]
   }
   </script>
 </head>

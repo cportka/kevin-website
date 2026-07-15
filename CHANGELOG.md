@@ -18,6 +18,16 @@ All notable changes to this project are documented here. The format is based on
   very top of the page, 100 at the very bottom — replacing the less useful
   per-project folio. Updates via a passive, rAF-throttled scroll listener.
 
+- **First visit now defaults to the light theme** (the site's canonical look)
+  instead of following the OS preference; dark mode is an explicit choice via
+  the toggle, remembered across visits.
+- Evaluator-driven improvements (Portka app-website-evaluator now scores the
+  site 100/100 A across all seven dimensions): the pre-paint theme/intro
+  script is inlined and authorized by a CSP `sha256` hash — first paint no
+  longer waits on a blocking script request — with a new test enforcing that
+  the hash always matches the inline script; JSON-LD enriched to a graph of
+  `Person` + `WebSite` + an `ItemList` of the ten selected works.
+
 ### Removed
 - The reel's Sound/Mute button — the current reel has no audio track. Restore
   when a reel with sound ships.

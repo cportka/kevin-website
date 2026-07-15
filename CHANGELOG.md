@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-07-15
+
+### Changed
+- The intro loading screen no longer shows the reel's poster frame; it is now a
+  "projector warm-up" hue cycle — **black → purple → blue → red → orange →
+  white** — running as one continuous color track that completes exactly as the
+  panel finishes collapsing onto the reel's frame. The wordmark sits solid
+  white over the dark half of the cycle and fades before the light half.
+
 ## [1.2.0] - 2026-07-15
 
 ### Added
@@ -58,6 +67,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.3.0]: https://github.com/cportka/kevin-website/releases/tag/v1.3.0
 [1.2.0]: https://github.com/cportka/kevin-website/releases/tag/v1.2.0
 [1.1.0]: https://github.com/cportka/kevin-website/releases/tag/v1.1.0
 [1.0.0]: https://github.com/cportka/kevin-website/releases/tag/v1.0.0

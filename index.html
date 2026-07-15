@@ -58,15 +58,13 @@
   </script>
 </head>
 <body>
-  <!-- Intro loading screen: starts full-viewport and collapses onto the reel's
-       frame (see main.js). Only displayed while <html> has .intro-pending, which
-       theme.js sets pre-paint (JS-on, motion-ok only) — so no-JS and
-       reduced-motion visitors never see it. -->
+  <!-- Intro loading screen: a full-viewport color panel that cycles
+       black -> purple -> blue -> red -> orange -> white while collapsing onto
+       the reel's frame (see main.js); the cycle completes with the collapse.
+       Only displayed while <html> has .intro-pending, which theme.js sets
+       pre-paint (JS-on, motion-ok only) — so no-JS and reduced-motion
+       visitors never see it. -->
   <div class="intro" id="intro" aria-hidden="true">
-    <picture>
-      <source type="image/webp" srcset="assets/video/reel-poster.webp" />
-      <img src="assets/video/reel-poster.jpg" alt="" width="1920" height="1080" decoding="async" />
-    </picture>
     <span class="intro__word">Kevin Haulihan</span>
   </div>
 

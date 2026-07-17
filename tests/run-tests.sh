@@ -134,8 +134,8 @@ for path in roots:
             if u: refs.add(u)
     for m in re.findall(r'url\(\s*["\']?([^)"\']+)["\']?\s*\)', txt):
         refs.add(m)
-# The site deploys under a GitHub project-Pages base path; root-absolute
-# links in 404.html use it, so resolve it back to the repo root here.
+# The site serves at the custom-domain root (kevinhaulihan.online); the BASE
+# strip below is kept for compatibility with any legacy subpath references.
 BASE = "kevin-website/"
 missing = []
 for r in sorted(refs):
@@ -187,7 +187,7 @@ fi
 
 # --- 7. Crawl / AI-readiness files present --------------------------------------------
 section "Crawl / AI-readiness / brand files"
-for f in robots.txt sitemap.xml llms.txt site.webmanifest favicon.svg .well-known/security.txt .nojekyll; do
+for f in CNAME robots.txt sitemap.xml llms.txt site.webmanifest favicon.svg .well-known/security.txt .nojekyll; do
   if [[ -e "$f" ]]; then pass "present: $f"; else fail "missing: $f"; fi
 done
 

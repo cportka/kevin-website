@@ -2,7 +2,7 @@
 
 Portfolio site for **Kevin Haulihan** — director / writer / producer.
 
-**Version:** 1.6.2
+**Version:** 1.6.3
 
 A hand-written static site (no framework), deployed to GitHub Pages via GitHub Actions. The
 design takes its cues from [mouthwash.studio](https://mouthwash.studio/): a white background,
@@ -23,7 +23,8 @@ assets/
   js/main.js            # scroll reveal, reel/unmute niceties (progressive enhancement)
   img/                  # project thumbnails (.webp + .jpg fallback)
   video/                # reel (.mp4) + poster
-  social/og.png         # social share image
+  social/og.png         # link-share card (1200×630)
+  social/github-social.png  # GitHub repo social preview (1280×640)
 favicon.svg             # circular headshot favicon (embedded photo)
 apple-touch-icon.png    # 180×180 touch icon
 site.webmanifest        # PWA/brand manifest

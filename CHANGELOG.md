@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2026-07-17
+
+### Added
+- **Portka standard installed in-repo** via `repo-bootstrap --portka-standard`:
+  a committed `.claude/CLAUDE.md` workflow block (branch per change → tests +
+  CI → PR → merge on green → the owner deletes the branch as confirmation), a
+  `.claude/settings.json` enabling the `app-website-evaluator` plugin with a
+  git/gh permissions allowlist for future sessions, and the standard's native
+  `node:test` version-sync test (`tests/version-sync.test.mjs`).
+
 ## [1.6.1] - 2026-07-17
 
 ### Changed
@@ -125,6 +135,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.6.2]: https://github.com/cportka/kevin-website/releases/tag/v1.6.2
 [1.6.1]: https://github.com/cportka/kevin-website/releases/tag/v1.6.1
 [1.6.0]: https://github.com/cportka/kevin-website/releases/tag/v1.6.0
 [1.5.0]: https://github.com/cportka/kevin-website/releases/tag/v1.5.0

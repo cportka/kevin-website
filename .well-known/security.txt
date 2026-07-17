@@ -2,4 +2,4 @@
 Contact: mailto:chrisportka@gmail.com
 Expires: 2027-06-01T00:00:00.000Z
 Preferred-Languages: en
-Canonical: https://cportka.github.io/kevin-website/.well-known/security.txt
+Canonical: https://kevinhaulihan.online/.well-known/security.txt

@@ -2,7 +2,7 @@
 
 Portfolio site for **Kevin Haulihan** — director / writer / producer.
 
-**Version:** 1.5.0
+**Version:** 1.6.0
 
 A hand-written static site (no framework), deployed to GitHub Pages via GitHub Actions. The
 design takes its cues from [mouthwash.studio](https://mouthwash.studio/): a white background,
@@ -11,7 +11,7 @@ thumbnail.
 
 ## Live site
 
-https://cportka.github.io/kevin-website/
+https://kevinhaulihan.online/
 
 ## Structure
 

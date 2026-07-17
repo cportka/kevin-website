@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-07-17
+
+### Changed
+- **The site now lives at [https://kevinhaulihan.online](https://kevinhaulihan.online).**
+  Every absolute URL — canonical, Open Graph/Twitter (`og:url`, share images),
+  the JSON-LD graph, `robots.txt`'s sitemap pointer, `sitemap.xml`, `llms.txt`,
+  `security.txt`, README, and `package.json#homepage` — moved from
+  `cportka.github.io/kevin-website` to the custom domain. A `CNAME` file ships
+  with the site, the 404 page's root-absolute links now target the domain root
+  (no more `/kevin-website/` base path), and the test suite requires `CNAME`.
+  Bonus: `robots.txt` and `sitemap.xml` are now served from the host root,
+  where crawlers actually honor them.
+
 ## [1.5.0] - 2026-07-17
 
 ### Added
@@ -105,6 +118,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.6.0]: https://github.com/cportka/kevin-website/releases/tag/v1.6.0
 [1.5.0]: https://github.com/cportka/kevin-website/releases/tag/v1.5.0
 [1.4.0]: https://github.com/cportka/kevin-website/releases/tag/v1.4.0
 [1.3.0]: https://github.com/cportka/kevin-website/releases/tag/v1.3.0

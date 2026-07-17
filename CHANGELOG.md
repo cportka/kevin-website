@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-07-17
+
+### Added
+- **Floating LA weather widget** in the bottom-right corner, just above the
+  000–100 scroll counter (same right edge, `difference` blend so it stays
+  legible over any background, in light and dark). A thin-stroke line icon
+  visualizes current Los Angeles conditions — with day/night variants
+  (sun/moon, partly-cloudy, cloud, fog, rain, snow, thunder) — and the
+  temperature in °F sits beneath it. Data comes from Open-Meteo (no API key,
+  CORS), allowed by a single `connect-src` origin added to the CSP; a new test
+  enforces that the CSP covers whatever origin `main.js` fetches. Pure
+  progressive enhancement: if the request is blocked/offline/failing, the
+  widget simply never appears and nothing else is affected.
+
 ## [1.6.3] - 2026-07-17
 
 ### Added
@@ -143,6 +157,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.7.0]: https://github.com/cportka/kevin-website/releases/tag/v1.7.0
 [1.6.3]: https://github.com/cportka/kevin-website/releases/tag/v1.6.3
 [1.6.2]: https://github.com/cportka/kevin-website/releases/tag/v1.6.2
 [1.6.1]: https://github.com/cportka/kevin-website/releases/tag/v1.6.1

@@ -185,7 +185,23 @@ else
   skip "python3 absent — CSP hash check"
 fi
 
-# --- 7. Crawl / AI-readiness files present --------------------------------------------
+# --- 7. Weather widget: JS fetch origin is allowed by the CSP -------------------------
+section "Weather widget — CSP connect-src covers the API it fetches"
+if [[ -f index.html && -f assets/js/main.js ]]; then
+  if grep -q 'api\.open-meteo\.com' assets/js/main.js; then
+    if grep -qE 'connect-src[^;]*https://api\.open-meteo\.com' index.html; then
+      pass "connect-src allows the Open-Meteo origin main.js fetches"
+    else
+      fail "main.js fetches api.open-meteo.com but the CSP connect-src does not allow it"
+    fi
+  else
+    skip "main.js does not fetch Open-Meteo — nothing to gate"
+  fi
+else
+  skip "index.html or main.js absent — weather CSP check"
+fi
+
+# --- 8. Crawl / AI-readiness files present --------------------------------------------
 section "Crawl / AI-readiness / brand files"
 for f in CNAME robots.txt sitemap.xml llms.txt site.webmanifest favicon.svg .well-known/security.txt .nojekyll; do
   if [[ -e "$f" ]]; then pass "present: $f"; else fail "missing: $f"; fi

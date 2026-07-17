@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-07-17
+
+### Added
+- **Kevin's portrait across the site's identity surfaces**, cropped to always
+  keep the whole visible face: a subtle circular headshot beside the name in
+  the footer; a circular-clipped photo `favicon.svg`; photo
+  `apple-touch-icon.png` and a new `icon-512.png` (added to the manifest); a
+  regenerated social share card (`og.png`) pairing the type with the rounded
+  portrait; and the JSON-LD `Person.image` now points at the real headshot.
+
 ## [1.4.0] - 2026-07-15
 
 ### Changed
@@ -95,6 +105,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.5.0]: https://github.com/cportka/kevin-website/releases/tag/v1.5.0
 [1.4.0]: https://github.com/cportka/kevin-website/releases/tag/v1.4.0
 [1.3.0]: https://github.com/cportka/kevin-website/releases/tag/v1.3.0
 [1.2.0]: https://github.com/cportka/kevin-website/releases/tag/v1.2.0

@@ -470,6 +470,7 @@ ul { list-style: none; margin: 0; padding: 0; }
   text-align: right;
   line-height: 1.7;
 }
+.colophon__site { color: var(--ink); }  /* the domain as a quiet wordmark */
 .colophon__meta a { text-decoration: underline; text-underline-offset: 3px; }
 .colophon__meta a:hover { color: var(--ink); }
 

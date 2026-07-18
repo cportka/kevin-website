@@ -45,8 +45,9 @@
 </script>
 
   <!-- Content Security Policy: same-origin everything except Google Fonts (styles + fonts)
-       and the Open-Meteo weather API (a single connect-src, data only). No third-party scripts. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'sha256-b2+z10LmIhz/qp0BA2FHoUbH1+SWBi2CcvWBu0zI+gU='; connect-src 'self' https://api.open-meteo.com; media-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'" />
+       and keyless weather/marine/air-quality/tide data APIs (connect-src, data only).
+       No third-party scripts. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'sha256-b2+z10LmIhz/qp0BA2FHoUbH1+SWBi2CcvWBu0zI+gU='; connect-src 'self' https://api.open-meteo.com https://marine-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.tidesandcurrents.noaa.gov; media-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'" />
 
   <!-- Icons / manifest -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -495,5 +496,6 @@
   </footer>
 
   <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/scene.js" defer></script>
 </body>
 </html>

@@ -4,6 +4,32 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-07-17
+
+### Changed
+- **The corner weather widget is now a living 100×100 pixel-art LA beach
+  diorama** (`assets/js/scene.js`), replacing the single line icon. A vintage
+  80s LA-noir scene — dithered sky, ocean with waves, sand, an askew coast
+  road, a neon sign, and a wind-swept palm — all driven by **real Los Angeles
+  time and conditions**:
+  - Sun rises/arcs/sets at LA's actual sunrise/sunset; a crescent moon and
+    stars at night. Sky gradient tracks the weather (blues clear, greys for
+    cloud/fog, storm-dark for rain, and a **brown smog/smoke tint when the LA
+    AQI is high**); the sun dims behind haze/cloud.
+  - **Ocean waves** scale their whitecaps and speed to LA surf (Open-Meteo
+    Marine `wave_height`); the **shoreline shifts with the Santa Monica tide**
+    (NOAA CO-OPS).
+  - **Cars occasionally pass** — pickup, semi, red sports car, hybrid,
+    motorcycle, logging truck (with logs), electric car, and a beat-up jalopy,
+    with headlights at night.
+  - A **neon sign shows the temperature**; its neon tubes light up around
+    sunset and switch off after dusk. The **palm sways with LA wind** intensity.
+  - Data via keyless CORS APIs (Open-Meteo forecast/marine/air-quality, NOAA
+    tides) added to the CSP `connect-src` — `script-src` unchanged (still no
+    third-party scripts). Everything degrades gracefully: any failed/blocked
+    source falls back, and reduced-motion / no-JS visitors get a single static
+    frame or nothing. A ~12 fps loop that pauses when the tab is hidden.
+
 ## [1.7.0] - 2026-07-17
 
 ### Added
@@ -157,6 +183,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.8.0]: https://github.com/cportka/kevin-website/releases/tag/v1.8.0
 [1.7.0]: https://github.com/cportka/kevin-website/releases/tag/v1.7.0
 [1.6.3]: https://github.com/cportka/kevin-website/releases/tag/v1.6.3
 [1.6.2]: https://github.com/cportka/kevin-website/releases/tag/v1.6.2

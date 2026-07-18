@@ -118,7 +118,7 @@ section "Asset integrity — referenced local files exist"
 if [[ $have_py -eq 1 && -f index.html ]]; then
   MISSING="$(python3 - <<'PY'
 import re, os, sys
-roots = ["index.html", "404.html"]
+roots = ["index.html", "404.html", "weather.html"]
 css = "assets/css/style.css"
 if os.path.exists(css): roots.append(css)
 refs = set()
@@ -165,20 +165,23 @@ fi
 section "CSP — inline script hash consistency"
 if [[ $have_py -eq 1 && -f index.html ]]; then
   if python3 - <<'PY2'
-import re, hashlib, base64, sys
-html = open("index.html", encoding="utf-8").read()
-# inline scripts = <script> tags with no src and no type attribute
-inlines = re.findall(r'<script>(.*?)</script>', html, re.S)
-csp = re.search(r'http-equiv="Content-Security-Policy"\s+content="([^"]+)"', html)
-hashes = re.findall(r"'sha256-([A-Za-z0-9+/=]+)'", csp.group(1)) if csp else []
-if not inlines and not hashes:
-    sys.exit(0)  # no inline scripts, no hashes — consistent
-if len(inlines) != len(hashes):
-    sys.exit(1)
-for body in inlines:
-    d = base64.b64encode(hashlib.sha256(body.encode()).digest()).decode()
-    if d not in hashes:
+import re, hashlib, base64, sys, os
+# Every root HTML page: its bare inline <script> bodies must each match a
+# CSP sha256 hash in that same page's policy (and counts must agree).
+for path in [f for f in ("index.html", "404.html", "weather.html") if os.path.exists(f)]:
+    html = open(path, encoding="utf-8").read()
+    # inline scripts = <script> tags with no src and no type attribute
+    inlines = re.findall(r'<script>(.*?)</script>', html, re.S)
+    csp = re.search(r'http-equiv="Content-Security-Policy"\s+content="([^"]+)"', html)
+    hashes = re.findall(r"'sha256-([A-Za-z0-9+/=]+)'", csp.group(1)) if csp else []
+    if not inlines and not hashes:
+        continue  # no inline scripts, no hashes — consistent
+    if len(inlines) != len(hashes):
         sys.exit(1)
+    for body in inlines:
+        d = base64.b64encode(hashlib.sha256(body.encode()).digest()).decode()
+        if d not in hashes:
+            sys.exit(1)
 PY2
   then pass "every inline <script> matches a CSP sha256 hash"; else fail "inline <script> content does not match the CSP sha256 hash(es)"; fi
 else
@@ -189,20 +192,36 @@ fi
 section "CSP connect-src covers every API origin the scripts fetch"
 if [[ $have_py -eq 1 && -f index.html ]]; then
   BAD="$(python3 - <<'PY2'
-import re, glob, os
-html = open("index.html", encoding="utf-8").read()
-csp = re.search(r'http-equiv="Content-Security-Policy"\s+content="([^"]+)"', html)
-policy = csp.group(1) if csp else ""
-cs = re.search(r'connect-src([^;]*)', policy)
-allowed = set(re.findall(r'https://[a-z0-9.-]+', cs.group(1))) if cs else set()
-# hosts the JS actually fetches (weather/marine/air-quality/tide data services)
-hosts = set()
-for f in glob.glob("assets/js/*.js"):
-    txt = open(f, encoding="utf-8").read()
-    for h in re.findall(r'https://([a-z0-9.-]*(?:open-meteo\.com|tidesandcurrents\.noaa\.gov))', txt):
-        hosts.add("https://" + h)
-missing = [h for h in sorted(hosts) if h not in allowed]
-print("\n".join(missing))
+import re, os
+# hosts a given local JS file fetches (weather/marine/air-quality/tide services)
+def hosts_in(js):
+    hs = set()
+    if os.path.exists(js):
+        txt = open(js, encoding="utf-8").read()
+        for h in re.findall(r'https://([a-z0-9.-]*(?:open-meteo\.com|tidesandcurrents\.noaa\.gov))', txt):
+            hs.add("https://" + h)
+    return hs
+
+# For each page: the union of hosts fetched by the local JS *it loads* must be
+# covered by *its own* connect-src. A page that loads no such JS is exempt.
+problems = []
+for path in [f for f in ("index.html", "404.html", "weather.html") if os.path.exists(f)]:
+    html = open(path, encoding="utf-8").read()
+    needed = set()
+    for s in re.findall(r'<script[^>]*\bsrc\s*=\s*["\']([^"\']+)["\']', html):
+        s = s.split("#")[0].split("?")[0]
+        if s.startswith("assets/js/") and s.endswith(".js"):
+            needed |= hosts_in(s)
+    if not needed:
+        continue
+    csp = re.search(r'http-equiv="Content-Security-Policy"\s+content="([^"]+)"', html)
+    policy = csp.group(1) if csp else ""
+    cs = re.search(r'connect-src([^;]*)', policy)
+    allowed = set(re.findall(r'https://[a-z0-9.-]+', cs.group(1))) if cs else set()
+    for h in sorted(needed):
+        if h not in allowed:
+            problems.append(path + " -> " + h)
+print("\n".join(problems))
 PY2
 )"
   if [[ -z "$BAD" ]]; then

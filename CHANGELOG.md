@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-07-18
+
+### Added
+- **Click the corner diorama to zoom it to full screen.** On the main page the
+  weather widget is now a button: clicking (or Enter/Space) animates it up to a
+  centered, whole-integer-scaled overlay — the same look as `/weather` — over a
+  backdrop that covers the page; clicking again (or the backdrop, or Escape)
+  docks it back to its 100×100 corner. The zoom is a FLIP transform, so the
+  motion is smooth **and** the resting state is a crisp integer upscale (never a
+  transform-blurred one). Page scroll locks while expanded; `aria-pressed`,
+  keyboard, focus ring, and `prefers-reduced-motion` (instant, no animation) are
+  all handled. The `/weather` page is exempt (it's already full-screen).
+
 ## [1.9.0] - 2026-07-18
 
 ### Added
@@ -208,6 +221,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.10.0]: https://github.com/cportka/kevin-website/releases/tag/v1.10.0
 [1.9.0]: https://github.com/cportka/kevin-website/releases/tag/v1.9.0
 [1.8.1]: https://github.com/cportka/kevin-website/releases/tag/v1.8.1
 [1.8.0]: https://github.com/cportka/kevin-website/releases/tag/v1.8.0

@@ -27,6 +27,10 @@
   var reduce = window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // Click-to-zoom state (the corner widget expands to a centered full-screen
+  // overlay and docks back on a second click). Only wired on the main page.
+  var interactive = false, expanded = false, animating = false;
+
   var wrap = document.createElement("div");
   wrap.className = "scene";
   wrap.setAttribute("role", "img");
@@ -173,9 +177,13 @@
     var now = laMinutes();
     var tod = now < W.sunrise || now > W.sunset ? "night"
       : Math.abs(now - W.sunset) < 45 ? "sunset" : Math.abs(now - W.sunrise) < 45 ? "sunrise" : "day";
-    wrap.setAttribute("aria-label",
-      "Los Angeles: " + (W.temp == null ? "—" : W.temp + "°F") + ", " + conditionWord() + ", " +
-      tod + (W.aqi > 130 ? ", smoggy" : "") + " — a pixel-art LA beach scene.");
+    var label = "Los Angeles: " + (W.temp == null ? "—" : W.temp + "°F") + ", " + conditionWord() + ", " +
+      tod + (W.aqi > 130 ? ", smoggy" : "") + " — a pixel-art LA beach scene.";
+    if (interactive) {
+      label += expanded ? " Expanded — activate to dock it back to the corner."
+                        : " Activate to zoom it to full screen.";
+    }
+    wrap.setAttribute("aria-label", label);
   }
 
   // =========================================================================
@@ -534,6 +542,97 @@
   function start() { if (!raf) { last = 0; raf = requestAnimationFrame(loop); } }
   function stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
   document.addEventListener("visibilitychange", function () { if (document.hidden) stop(); else if (!reduce) start(); });
+
+  // =========================================================================
+  //  CLICK-TO-ZOOM  (main page only; the /weather page is already full-screen)
+  // =========================================================================
+  //  A FLIP-style zoom: the expanded state is laid out for real (centered,
+  //  integer-scaled), then a transform pins it back over the corner and animates
+  //  to identity — so the resting state is a crisp whole-integer upscale (never a
+  //  transform-blurred one) and the motion is a single GPU-friendly transform.
+  function wireZoom() {
+    interactive = true;
+    wrap.classList.add("is-interactive");
+    wrap.setAttribute("role", "button");
+    wrap.setAttribute("tabindex", "0");
+    wrap.setAttribute("aria-pressed", "false");
+    wrap.style.transformOrigin = "0 0";
+
+    var backdrop = document.createElement("div");
+    backdrop.className = "scene-backdrop";
+    backdrop.hidden = true;
+    host.appendChild(backdrop);
+
+    function intScale() {                       // largest N with N*100px fitting
+      var avail = Math.min(window.innerWidth, window.innerHeight) - 32;
+      var n = Math.floor(avail / 100);
+      return n < 1 ? 1 : n;
+    }
+    function sizeExpanded() { wrap.style.setProperty("--exp-size", intScale() * 100 + "px"); }
+    // transform mapping box `to` so it visually sits where box `from` is (origin 0,0)
+    function flip(from, to) {
+      return "translate(" + (from.left - to.left) + "px," + (from.top - to.top) + "px) scale(" +
+        (from.width / to.width) + ")";
+    }
+    function once(el, cb) {                      // transitionend (transform) + safety timeout
+      var done = false;
+      function fin(e) { if (done || (e && e.propertyName !== "transform")) return; done = true; el.removeEventListener("transitionend", fin); clearTimeout(t); cb(); }
+      var t = setTimeout(fin, 900);
+      el.addEventListener("transitionend", fin);
+    }
+
+    function expand() {
+      if (expanded || animating) { return; }
+      animating = true; expanded = true;
+      document.documentElement.classList.add("scene-lock");
+      var home = wrap.getBoundingClientRect();
+      backdrop.hidden = false; void backdrop.offsetWidth; backdrop.classList.add("is-on");
+      wrap.classList.add("is-expanded"); sizeExpanded();
+      var exp = wrap.getBoundingClientRect();
+      updateA11y();
+      if (reduce) { animating = false; return; }
+      wrap.style.transition = "none";
+      wrap.style.transform = flip(home, exp);   // pin over the corner
+      void wrap.offsetWidth;
+      wrap.style.transition = "";               // back to the CSS transform transition
+      requestAnimationFrame(function () { wrap.style.transform = "none"; });
+      once(wrap, function () { animating = false; wrap.style.transform = ""; });
+    }
+
+    function collapse() {
+      if (!expanded || animating) { return; }
+      animating = true; expanded = false;
+      var exp = wrap.getBoundingClientRect();
+      wrap.classList.remove("is-expanded");     // re-dock the real layout to the corner
+      var home = wrap.getBoundingClientRect();
+      backdrop.classList.remove("is-on");
+      updateA11y();
+      function fin() {
+        animating = false; wrap.style.transform = ""; backdrop.hidden = true;
+        document.documentElement.classList.remove("scene-lock");
+      }
+      if (reduce) { fin(); return; }
+      wrap.style.transition = "none";
+      wrap.style.transform = flip(exp, home);   // start looking expanded
+      void wrap.offsetWidth;
+      wrap.style.transition = "";
+      requestAnimationFrame(function () { wrap.style.transform = "none"; });
+      once(wrap, fin);
+    }
+
+    function toggle() { expanded ? collapse() : expand(); }
+    function updateA11y() { wrap.setAttribute("aria-pressed", expanded ? "true" : "false"); describe(); }
+
+    wrap.addEventListener("click", toggle);
+    wrap.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") { e.preventDefault(); toggle(); }
+      else if (e.key === "Escape" && expanded) { collapse(); }
+    });
+    backdrop.addEventListener("click", collapse);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && expanded) { collapse(); } });
+    window.addEventListener("resize", function () { if (expanded && !animating) { sizeExpanded(); } });
+  }
+  if (!document.body.classList.contains("weather")) { wireZoom(); }
 
   describe();
   loadData();

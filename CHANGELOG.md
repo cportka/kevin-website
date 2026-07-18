@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.3] - 2026-07-18
+
+### Changed
+- **The beachgoer folds down and rises smoothly.** Instead of snapping between
+  standing and reclining, the woman now plays two in-between poses each way —
+  a bowed **crouch** kneeling onto the towel, then a **propped** sit with her
+  legs stretching out — before settling into the sunbathe, and mirrors them in
+  reverse when she gets up. Her head steps down (and back up) a pixel at a time
+  so the transition reads as one continuous motion.
+
 ## [1.12.2] - 2026-07-18
 
 ### Fixed

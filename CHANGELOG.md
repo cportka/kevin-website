@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-07-18
+
+### Added
+- **A beachgoer strolls the diorama's sand.** By day, in decent weather, a woman
+  walks out, lays a striped towel and sunbathes; when the weather is foul she
+  keeps walking instead — under an **umbrella** (rain/fog) or in a **gas mask**
+  (heavy smog) — past the sign and out of frame. **At night a cat** pads down the
+  beach instead, strolling with its tail up or hunched and quick when the weather
+  turns. Driven by the same real LA time + conditions as the rest of the scene.
+
+### Changed
+- **The theme toggle is gone; the site is light-only.** The light/dark button was
+  removed and the pre-paint script always paints light, so the site keeps its
+  canonical white-cube look for everyone (`index.html`, `weather.html`).
+- **The corner-widget zoom is smoother and flash-free.** Reworked the expand/
+  collapse as a canonical FLIP that commits the pinned transform with a single
+  reflow and animates in the same tick (no `requestAnimationFrame` deferral,
+  which caused an occasional one-frame flash), on a gentle ease.
+- **The sun is warmer and brighter** — a richer golden core with a hot centre and
+  a wider warm bloom.
+- **Vehicles ride a pixel higher** so wheels sit cleanly within the lane; the
+  motorcycle's wheels no longer overhang below the others.
+
 ## [1.11.1] - 2026-07-18
 
 ### Changed
@@ -254,6 +277,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.12.0]: https://github.com/cportka/kevin-website/releases/tag/v1.12.0
 [1.11.1]: https://github.com/cportka/kevin-website/releases/tag/v1.11.1
 [1.11.0]: https://github.com/cportka/kevin-website/releases/tag/v1.11.0
 [1.10.0]: https://github.com/cportka/kevin-website/releases/tag/v1.10.0

@@ -14,23 +14,15 @@
        test suite verifies the hash matches this exact script content). -->
   <script>
 /* Runs in <head> before first paint. Two jobs, both flash-sensitive:
-   1) Resolve the theme (stored choice → light default) so the page
-      never paints in the wrong theme.
+   1) Paint the light theme before first paint (the site is light-only).
    2) Arm the intro loading screen (html.intro-pending shows the full-viewport
       overlay; main.js collapses it onto the reel). Armed only when JS runs and
       motion is allowed, so no-JS / reduced-motion visitors get the plain page.
    Kept tiny and dependency-free. */
 (function () {
   var root = document.documentElement;
-  try {
-    var stored = localStorage.getItem("theme");
-    // First visit defaults to LIGHT (the site's canonical look); dark is an
-    // explicit choice via the toggle, remembered across visits.
-    var theme = (stored === "light" || stored === "dark") ? stored : "light";
-    root.setAttribute("data-theme", theme);
-  } catch (e) {
-    root.setAttribute("data-theme", "light");
-  }
+  // Light-only site — the theme toggle was removed, so always paint light.
+  root.setAttribute("data-theme", "light");
 
   try {
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -47,7 +39,7 @@
   <!-- Content Security Policy: same-origin everything except Google Fonts (styles + fonts)
        and keyless weather/marine/air-quality/tide data APIs (connect-src, data only).
        No third-party scripts. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'sha256-b2+z10LmIhz/qp0BA2FHoUbH1+SWBi2CcvWBu0zI+gU='; connect-src 'self' https://api.open-meteo.com https://marine-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.tidesandcurrents.noaa.gov; media-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'sha256-9ce/fT2iKnDyymnbfmmGUw2LzegF3bhkcpRN9Uc+J+o='; connect-src 'self' https://api.open-meteo.com https://marine-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.tidesandcurrents.noaa.gov; media-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'" />
 
   <!-- Icons / manifest -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -234,15 +226,6 @@
           <a href="#work">Work</a>
           <a href="#about">About</a>
         </nav>
-        <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark theme" aria-pressed="false" title="Dark mode">
-          <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
-          </svg>
-          <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4.2" />
-            <path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8 5.9 18.1M18.1 5.9 19.8 4.2" />
-          </svg>
-        </button>
       </div>
     </div>
     <p class="masthead__meta eyebrow">Emmy-winning Director <span class="dot">·</span> Writer <span class="dot">·</span> Producer <span class="dot">—</span> Los Angeles</p>

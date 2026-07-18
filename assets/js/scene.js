@@ -243,11 +243,13 @@
       var sx = Math.round(lerp(6, 44, p));
       var sy = Math.round(HORIZON - 2 - Math.sin(p * Math.PI) * (HORIZON - 6));
       var low = Math.sin(p * Math.PI) < 0.35;           // near horizon -> orange
-      var core = low ? "#ffd27a" : "#fff2c4";
-      var glow = low ? "#ff9a4e" : "#ffe08a";
-      // soft glow
-      b.globalAlpha = 0.5; disc(sx, sy, 4, glow); b.globalAlpha = 1;
+      var core = low ? "#ffd47e" : "#fff0aa";           // warmer, brighter golden
+      var glow = low ? "#ff8a3c" : "#ffcf5e";           // warm saturated halo
+      // warm layered glow — a wide bloom, then a tighter inner glow
+      b.globalAlpha = 0.28; disc(sx, sy, 6, glow); b.globalAlpha = 1;
+      b.globalAlpha = 0.55; disc(sx, sy, 4, glow); b.globalAlpha = 1;
       disc(sx, sy, 3, core);
+      px(sx, sy, "#fffdf0");                            // hot bright centre
       // haze dims the sun when cloudy/smoggy/foggy
       var dim = clamp(W.cloud / 100 * 0.5 + clamp((W.aqi - 90) / 160, 0, 0.5), 0, 0.8);
       if (W.code === 45 || W.code === 48) dim = Math.max(dim, 0.55);
@@ -462,7 +464,7 @@
   // the lane, and every sprite is drawn nose-RIGHT — the flip below turns the
   // left-bound (far-lane) traffic around, so cars always face where they head.
   var CARS = ["pickup", "semi", "sports", "hybrid", "moto", "logging", "electric", "jalopy"];
-  var LANE_NEAR = 44, LANE_FAR = 40;                    // wheel baselines (sit inside each lane)
+  var LANE_NEAR = 43, LANE_FAR = 39;                    // wheel baselines (sit inside each lane)
   var cars = [], nextSpawn = 30, rnd = 1;
   function rng() { rnd = (rnd * 1103515245 + 12345) & 0x7fffffff; return rnd / 0x7fffffff; }
   function spawnCar(frame) {
@@ -480,22 +482,20 @@
   // headlight up front, a red tail lamp at the back.
   function drawMoto(x, yb, col, night) {
     var frameC = "#26262b", tank = col("#d23b3b"), jacket = col("#3a63b8"), skin = "#d7a26a", chrome = "#aab0b6";
-    // wheels, spaced: rear-left, front-right
-    disc(x + 1, yb, 1, "#0c0c0c"); px(x + 1, yb, chrome);
-    disc(x + 8, yb, 1, "#0c0c0c"); px(x + 8, yb, chrome);
-    // frame spine + fuel tank
-    rect(x + 2, yb - 1, 6, 1, frameC);
-    rect(x + 4, yb - 2, 2, 1, tank);
-    // front fork, handlebar, headlight at the nose
-    px(x + 7, yb - 2, frameC); px(x + 8, yb - 3, chrome);
-    px(x + 9, yb - 2, night ? "#fff2b0" : "#ffe6a0");
+    var wy = yb - 1;                                        // wheel centers; wheel bottoms rest at yb (like cars)
+    disc(x + 1, wy, 1, "#0c0c0c"); px(x + 1, wy, chrome);   // rear wheel (left)
+    disc(x + 8, wy, 1, "#0c0c0c"); px(x + 8, wy, chrome);   // front wheel (right)
+    rect(x + 2, wy - 1, 6, 1, frameC);                      // frame spine
+    rect(x + 4, wy - 2, 2, 1, tank);                        // fuel tank
+    px(x + 7, wy - 1, frameC); px(x + 8, wy - 2, chrome);   // fork + handlebar
+    px(x + 9, wy - 1, night ? "#fff2b0" : "#ffe6a0");       // headlight at the nose
     // rider in a blue jacket, leaning forward toward the bars (distinct from the dark bike)
-    px(x + 3, yb - 2, jacket);                              // hip / seat
-    px(x + 4, yb - 3, jacket); px(x + 5, yb - 3, jacket); px(x + 6, yb - 3, jacket);  // back + shoulder
-    px(x + 5, yb - 4, skin);                                // head
-    px(x + 5, yb - 5, night ? "#20202a" : "#22356a");       // helmet
-    px(x + 7, yb - 3, skin);                                // arm/hand on the bar
-    px(x, yb - 2, "#7a1f1f");                               // tail lamp (rear-left)
+    px(x + 3, wy - 1, jacket);                              // hip / seat
+    px(x + 4, wy - 2, jacket); px(x + 5, wy - 2, jacket); px(x + 6, wy - 2, jacket);  // back + shoulder
+    px(x + 5, wy - 3, skin);                                // head
+    px(x + 5, wy - 4, night ? "#20202a" : "#22356a");       // helmet
+    px(x + 7, wy - 2, skin);                                // arm/hand on the bar
+    px(x, wy - 1, "#7a1f1f");                               // tail lamp (rear-left)
   }
 
   function drawCar(car, dayT) {
@@ -575,6 +575,107 @@
     }
   }
 
+  // ---- beachgoer ----------------------------------------------------------
+  // A single stroller crosses the beach now and then. By day (decent weather) a
+  // woman walks out, lays a towel and sunbathes; in bad weather she keeps
+  // walking (umbrella for rain/fog, gas mask for heavy smog) on past the sign
+  // and out of frame. At night a cat pads down the beach instead — hunched and
+  // quick when the weather turns foul.
+  var walker = null, nextWalker = 90;
+  function badWx() { return (W.code >= 45) || (W.aqi >= 160); }   // rain/fog/snow/storm, or heavy smog
+  function spawnWalker(dayT) {
+    var day = dayT > 0.45;
+    var bad = badWx();
+    var gear = bad ? ((W.aqi >= 160 && W.code < 51) ? "gasmask" : "umbrella") : null;
+    walker = {
+      kind: day ? "woman" : "cat",
+      bad: bad, gear: gear, x: -8, dir: 1, fy: ROADTOP - 3,   // walk the sand, clear of the road
+      state: "walking",
+      stops: day && !bad,                        // only a fair-weather day woman settles down
+      targetX: 15 + Math.floor(rng() * 6),
+      dwell: 0,
+      speed: bad ? (day ? 0.30 : 0.55) : (day ? 0.22 : 0.34)
+    };
+  }
+  function updateWalker(dayT, frame) {
+    if (!walker) { if (frame >= nextWalker) spawnWalker(dayT); return; }
+    var w = walker;
+    if (w.state === "walking") {
+      w.x += w.speed * w.dir;
+      if (w.stops && w.x >= w.targetX) { w.state = "sunbathing"; w.dwell = 850 + Math.floor(rng() * 900); }
+      else if (w.x > L + 10) { walker = null; nextWalker = frame + Math.round(320 + rng() * 620); }
+    } else if (w.state === "sunbathing") {
+      w.dwell--;
+      if (w.dwell <= 0 || badWx()) { w.state = "leaving"; }   // pack up if the weather turns
+    } else {                                                   // leaving
+      w.x += w.speed * w.dir;
+      if (w.x > L + 10) { walker = null; nextWalker = frame + Math.round(320 + rng() * 620); }
+    }
+  }
+  function drawWalker(dayT, frame) {
+    if (!walker) return;
+    var w = walker, x = Math.round(w.x);
+    if (w.kind === "woman") {
+      if (w.state === "sunbathing") drawSunbather(x, w.fy);
+      else drawWoman(x, w.fy, frame, w.gear);
+    } else {
+      drawCat(x, w.fy, frame, dayT, w.bad);
+    }
+  }
+  function drawWoman(x, fy, frame, gear) {
+    var skin = "#e8b98f", hair = "#5a3a1e", suit = "#e0445a";
+    var step = (frame >> 2) & 1;
+    // long hair + head
+    px(x, fy - 6, hair); px(x + 1, fy - 6, hair);
+    px(x, fy - 5, hair); px(x + 1, fy - 5, skin);          // hair back, face front
+    px(x, fy - 4, hair); px(x + 1, fy - 4, suit);          // hair falls, bikini top
+    px(x, fy - 3, hair);                                    // long hair
+    px(x + 1, fy - 3, skin); px(x + 2, fy - 3, skin);       // waist + swinging arm
+    px(x + 1, fy - 2, suit);                                // bikini bottom
+    px(x + 1, fy - 1, skin);                                // thigh
+    // legs — a little walk cycle
+    if (step) { px(x + 1, fy, skin); }
+    else { px(x, fy, skin); px(x + 2, fy, skin); }
+    // bad-weather gear
+    if (gear === "umbrella") {
+      var u1 = "#d83a52", u2 = "#f4f4f4";
+      rect(x - 1, fy - 8, 5, 1, u1); px(x, fy - 8, u2); px(x + 2, fy - 8, u2);   // canopy
+      px(x - 1, fy - 7, u1); px(x + 3, fy - 7, u1);                               // drooping edges
+      px(x + 2, fy - 7, "#6a5a3a"); px(x + 2, fy - 6, "#6a5a3a");                 // pole to hand
+    } else if (gear === "gasmask") {
+      px(x + 1, fy - 5, "#3f5a3f"); px(x + 2, fy - 5, "#3f5a3f");                 // mask + filter snout
+      px(x + 1, fy - 4, "#33482f");
+    }
+  }
+  function drawSunbather(x, fy) {
+    var skin = "#e8b98f", hair = "#5a3a1e", suit = "#e0445a", t1 = "#22b0c2", t2 = "#f0d24a";
+    for (var i = 0; i < 9; i++) { px(x + i, fy, (i & 1) ? t1 : t2); }   // striped towel
+    px(x, fy - 1, hair); px(x + 1, fy - 1, hair); px(x + 2, fy - 1, skin);   // hair + head (left)
+    rect(x + 3, fy - 1, 5, 1, skin);                                          // reclining body + legs
+    px(x + 4, fy - 1, suit); px(x + 6, fy - 1, suit);                         // bikini top + bottom
+    px(x + 2, fy - 2, hair);                                                  // hair spilling on the towel
+    px(x + 8, fy - 2, skin);                                                  // a knee raised
+  }
+  function drawCat(x, fy, frame, dayT, bad) {
+    var body = dayT < 0.35 ? "#b98a52" : "#d99a4a", dark = dayT < 0.35 ? "#8a6636" : "#b06a2a";
+    var step = (frame >> 2) & 1;
+    if (bad) {                                              // hunched, low, quick
+      rect(x + 1, fy - 1, 4, 1, body);                     // low body
+      px(x + 5, fy - 1, body);                             // head down
+      px(x + 5, fy - 2, dark); px(x + 6, fy - 2, dark);    // ears back
+      px(x, fy - 1, body);                                 // tail tucked
+      px(x + 2, fy, dark); px(x + 4, fy, dark);            // legs (running)
+    } else {                                               // upright stroll, tail high
+      px(x, fy - 2, body); px(x, fy - 3, body);            // tail up (back-left)
+      rect(x + 1, fy - 1, 4, 1, body);                     // body
+      px(x + 4, fy - 2, body); px(x + 5, fy - 2, body);    // head + muzzle (right)
+      px(x + 4, fy - 3, dark); px(x + 5, fy - 3, dark);    // two ears
+      px(x + 2, fy - 1, dark); px(x + 3, fy - 1, dark);    // tabby stripes
+      if (step) { px(x + 1, fy, dark); px(x + 4, fy, dark); }
+      else { px(x + 2, fy, dark); px(x + 5, fy, dark); }   // padding legs
+    }
+  }
+
   // =========================================================================
   var frame = 0;
   function render() {
@@ -602,6 +703,9 @@
       }
     }
     drawPalm(now, dayT, frame);
+    // beachgoer strolls the sand (in front of the palm, behind the road + sign)
+    if (!reduce) { updateWalker(dayT, frame); }
+    drawWalker(dayT, frame);
     drawRoad(dayT);
     drawForeground(dayT);
     drawSign(now, dayT, frame);
@@ -675,22 +779,31 @@
       el.addEventListener("transitionend", fin);
     }
 
+    // Canonical FLIP: put the element in its FINAL layout, pin it back over the
+    // start box with a transform, force one reflow to commit that, then clear the
+    // transform in the SAME tick so it animates. No requestAnimationFrame — the
+    // rAF deferral is what caused the one-frame flash. transform-only, GPU-smooth.
+    var TRANS = "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)";
+    function animateFlip(fromBox, toBox, done) {
+      wrap.style.transition = "none";
+      wrap.style.transform = flip(fromBox, toBox);   // pin visually onto `fromBox`
+      void wrap.offsetWidth;                         // commit the pinned state
+      wrap.style.transition = TRANS;
+      wrap.style.transform = "none";                 // → animates to the real (toBox) layout
+      once(wrap, done);
+    }
+
     function expand() {
       if (expanded || animating) { return; }
       animating = true; expanded = true;
       document.documentElement.classList.add("scene-lock");
       var home = wrap.getBoundingClientRect();
-      backdrop.hidden = false; void backdrop.offsetWidth; backdrop.classList.add("is-on");
       wrap.classList.add("is-expanded"); sizeExpanded();
       var exp = wrap.getBoundingClientRect();
       updateA11y();
+      backdrop.hidden = false; void backdrop.offsetWidth; backdrop.classList.add("is-on");
       if (reduce) { animating = false; return; }
-      wrap.style.transition = "none";
-      wrap.style.transform = flip(home, exp);   // pin over the corner
-      void wrap.offsetWidth;
-      wrap.style.transition = "";               // back to the CSS transform transition
-      requestAnimationFrame(function () { wrap.style.transform = "none"; });
-      once(wrap, function () { animating = false; wrap.style.transform = ""; });
+      animateFlip(home, exp, function () { animating = false; wrap.style.transition = ""; wrap.style.transform = ""; });
     }
 
     function collapse() {
@@ -699,19 +812,15 @@
       var exp = wrap.getBoundingClientRect();
       wrap.classList.remove("is-expanded");     // re-dock the real layout to the corner
       var home = wrap.getBoundingClientRect();
-      backdrop.classList.remove("is-on");
       updateA11y();
+      backdrop.classList.remove("is-on");        // fades out via its own CSS transition
       function fin() {
-        animating = false; wrap.style.transform = ""; backdrop.hidden = true;
+        animating = false; wrap.style.transition = ""; wrap.style.transform = "";
+        backdrop.hidden = true;
         document.documentElement.classList.remove("scene-lock");
       }
       if (reduce) { fin(); return; }
-      wrap.style.transition = "none";
-      wrap.style.transform = flip(exp, home);   // start looking expanded
-      void wrap.offsetWidth;
-      wrap.style.transition = "";
-      requestAnimationFrame(function () { wrap.style.transform = "none"; });
-      once(wrap, fin);
+      animateFlip(exp, home, fin);               // start looking expanded, shrink to the corner
     }
 
     function toggle() { expanded ? collapse() : expand(); }
@@ -737,6 +846,10 @@
     };
     window.__spawnBird = function (kind, dir, x, y) {
       birds.push({ kind: kind, dir: dir || 1, y: y || 15, speed: 0, x: x == null ? 25 : x, ph: 0 });
+    };
+    window.__setWalker = function (opts) {
+      walker = Object.assign({ x: 20, dir: 1, fy: ROADTOP - 3, state: "walking", stops: false,
+        targetX: 20, dwell: 999, speed: 0, kind: "woman", bad: false, gear: null }, opts || {});
     };
   }
 

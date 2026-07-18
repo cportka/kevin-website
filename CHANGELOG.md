@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.2] - 2026-07-18
+
+### Fixed
+- **No more white flash when minimizing the corner widget.** Collapsing removed
+  the widget's `is-expanded` class up front, which dropped its `z-index` below
+  the still-opaque (fading) backdrop, so the shrinking widget was briefly hidden
+  behind white. The widget now keeps a z-index above the backdrop for the whole
+  shrink, and the backdrop's fade is timed to the zoom.
+
 ## [1.12.1] - 2026-07-18
 
 ### Changed
@@ -287,6 +296,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.12.2]: https://github.com/cportka/kevin-website/releases/tag/v1.12.2
 [1.12.1]: https://github.com/cportka/kevin-website/releases/tag/v1.12.1
 [1.12.0]: https://github.com/cportka/kevin-website/releases/tag/v1.12.0
 [1.11.1]: https://github.com/cportka/kevin-website/releases/tag/v1.11.1

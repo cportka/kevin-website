@@ -819,11 +819,14 @@
       animating = true; expanded = false;
       var exp = wrap.getBoundingClientRect();
       wrap.classList.remove("is-expanded");     // re-dock the real layout to the corner
+      // Removing is-expanded drops the scene's z-index below the backdrop; keep it
+      // on top while it shrinks so the fading white backdrop can't flash over it.
+      wrap.style.zIndex = "91";
       var home = wrap.getBoundingClientRect();
       updateA11y();
       backdrop.classList.remove("is-on");        // fades out via its own CSS transition
       function fin() {
-        animating = false; wrap.style.transition = ""; wrap.style.transform = "";
+        animating = false; wrap.style.transition = ""; wrap.style.transform = ""; wrap.style.zIndex = "";
         backdrop.hidden = true;
         document.documentElement.classList.remove("scene-lock");
       }

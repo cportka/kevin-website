@@ -589,10 +589,10 @@
     var gear = bad ? ((W.aqi >= 160 && W.code < 51) ? "gasmask" : "umbrella") : null;
     walker = {
       kind: day ? "woman" : "cat",
-      bad: bad, gear: gear, x: -8, dir: 1, fy: ROADTOP - 3,   // walk the sand, clear of the road
+      bad: bad, gear: gear, x: -8, dir: 1, fy: ROADTOP - 4,   // walk the sand, clear of the road
       state: "walking",
       stops: day && !bad,                        // only a fair-weather day woman settles down
-      targetX: 15 + Math.floor(rng() * 6),
+      targetX: 13 + Math.floor(rng() * 6),       // settle clear of the sign, to the left
       dwell: 0,
       speed: bad ? (day ? 0.30 : 0.55) : (day ? 0.22 : 0.34)
     };
@@ -602,14 +602,14 @@
     var w = walker;
     if (w.state === "walking") {
       w.x += w.speed * w.dir;
-      if (w.stops && w.x >= w.targetX) { w.state = "sunbathing"; w.dwell = 850 + Math.floor(rng() * 900); }
-      else if (w.x > L + 10) { walker = null; nextWalker = frame + Math.round(320 + rng() * 620); }
+      if (w.stops && w.x >= w.targetX) { w.state = "sunbathing"; w.dwell = 330 + Math.floor(rng() * 90); }  // ~30s
+      else if (w.x > L + 10) { walker = null; nextWalker = frame + Math.round(60 + rng() * 60); }   // next one strolls out in 5-10s
     } else if (w.state === "sunbathing") {
       w.dwell--;
       if (w.dwell <= 0 || badWx()) { w.state = "leaving"; }   // pack up if the weather turns
     } else {                                                   // leaving
       w.x += w.speed * w.dir;
-      if (w.x > L + 10) { walker = null; nextWalker = frame + Math.round(320 + rng() * 620); }
+      if (w.x > L + 10) { walker = null; nextWalker = frame + Math.round(60 + rng() * 60); }   // next one strolls out in 5-10s
     }
   }
   function drawWalker(dayT, frame) {
@@ -649,12 +649,20 @@
   }
   function drawSunbather(x, fy) {
     var skin = "#e8b98f", hair = "#5a3a1e", suit = "#e0445a", t1 = "#22b0c2", t2 = "#f0d24a";
-    for (var i = 0; i < 9; i++) { px(x + i, fy, (i & 1) ? t1 : t2); }   // striped towel
-    px(x, fy - 1, hair); px(x + 1, fy - 1, hair); px(x + 2, fy - 1, skin);   // hair + head (left)
-    rect(x + 3, fy - 1, 5, 1, skin);                                          // reclining body + legs
-    px(x + 4, fy - 1, suit); px(x + 6, fy - 1, suit);                         // bikini top + bottom
-    px(x + 2, fy - 2, hair);                                                  // hair spilling on the towel
-    px(x + 8, fy - 2, skin);                                                  // a knee raised
+    for (var i = 0; i < 9; i++) { px(x + i, fy, (i & 1) ? t1 : t2); }   // striped beach towel
+    // head + long hair resting at the left
+    px(x, fy - 1, skin);                                   // face
+    px(x - 1, fy - 1, hair); px(x, fy - 2, hair);          // hair behind + on top
+    px(x - 1, fy, hair);                                   // hair spilling onto the towel
+    // torso: bust/bikini-top rises, then a bare midriff, then the hip
+    px(x + 1, fy - 1, skin);                               // neck / shoulder
+    px(x + 2, fy - 1, suit); px(x + 2, fy - 2, suit);      // bikini top (chest rises a touch)
+    px(x + 3, fy - 1, skin); px(x + 4, fy - 1, skin);      // bare waist
+    px(x + 5, fy - 1, suit);                               // bikini bottom (hip)
+    // legs stretched right, one knee bent UP — the classic sunbathe silhouette
+    px(x + 6, fy - 1, skin);                               // thigh
+    px(x + 7, fy - 1, skin); px(x + 7, fy - 2, skin); px(x + 7, fy - 3, skin);  // raised bent knee
+    px(x + 8, fy - 1, skin);                               // shin back down to the towel
   }
   function drawCat(x, fy, frame, dayT, bad) {
     var body = dayT < 0.35 ? "#b98a52" : "#d99a4a", dark = dayT < 0.35 ? "#8a6636" : "#b06a2a";
@@ -848,7 +856,7 @@
       birds.push({ kind: kind, dir: dir || 1, y: y || 15, speed: 0, x: x == null ? 25 : x, ph: 0 });
     };
     window.__setWalker = function (opts) {
-      walker = Object.assign({ x: 20, dir: 1, fy: ROADTOP - 3, state: "walking", stops: false,
+      walker = Object.assign({ x: 20, dir: 1, fy: ROADTOP - 4, state: "walking", stops: false,
         targetX: 20, dwell: 999, speed: 0, kind: "woman", bad: false, gear: null }, opts || {});
     };
   }

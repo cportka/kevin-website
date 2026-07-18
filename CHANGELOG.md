@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.1] - 2026-07-18
+
+### Changed
+- **Beachgoer polish.** The woman/cat sit a pixel higher and the sunbather
+  settles a couple pixels to the left so her towel no longer touches the sign.
+  Her **sunbathe is now ~30 seconds** — then she gets up, walks on to the right
+  behind the sign and out of frame, and the **next stroller arrives ~5–10s
+  later**. The reclining pose is redrawn to read more clearly as a woman: head
+  and flowing hair, bikini top and hip, and a raised bent knee.
+
 ## [1.12.0] - 2026-07-18
 
 ### Added
@@ -277,6 +287,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.12.1]: https://github.com/cportka/kevin-website/releases/tag/v1.12.1
 [1.12.0]: https://github.com/cportka/kevin-website/releases/tag/v1.12.0
 [1.11.1]: https://github.com/cportka/kevin-website/releases/tag/v1.11.1
 [1.11.0]: https://github.com/cportka/kevin-website/releases/tag/v1.11.0

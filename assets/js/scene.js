@@ -332,8 +332,8 @@
     b.globalAlpha = 1;
   }
 
-  // Slightly askew road with a faded centre line.
-  function roadY(x) { return Math.round(Math.sin(x * 0.12) * 0.9); }
+  // Straight horizontal road (roadY kept as a hook for all callers).
+  function roadY(x) { return 0; }
   function drawRoad(dayT) {
     var asph = dayT < 0.35 ? "#26262c" : "#3c3c44";
     var edge = dayT < 0.35 ? "#3a3a42" : "#55555f";
@@ -361,55 +361,71 @@
     for (var r = 0; r < 5; r++) for (var k = 0; k < 3; k++) if (g[r][k] === "1") px(x + k, y + r, c);
   }
 
-  // Neon sign beside the road: lights up around sunset -> dusk, shows temp.
+  // Neon billboard beside the road: lights up around sunset -> dusk, shows temp.
   function drawSign(now, dayT, frame) {
-    var sx = 33, top = 25, w = 15, h = 11;
+    var sx = 29, top = 21, w = 19, h = 15;
     var lit = now >= W.sunset - 3 && now <= W.sunset + 35;   // sunset -> dusk
     var flick = lit && ((frame >> 1) % 17 === 0) ? 0.55 : 1;
-    // post
-    rect(sx + 6, top + h, 2, ROADBOT - (top + h) - 1, dayT < 0.35 ? "#2a2a30" : "#4a4a52");
+    // twin posts down to the road
+    var postC = dayT < 0.35 ? "#2a2a30" : "#4a4a52";
+    rect(sx + 4, top + h, 2, ROADBOT - (top + h) - 1, postC);
+    rect(sx + w - 6, top + h, 2, ROADBOT - (top + h) - 1, postC);
     // panel
     rect(sx, top, w, h, lit ? "#150f1f" : (dayT < 0.35 ? "#14141a" : "#20202a"));
-    // neon tube border
+    // neon tube border (double line when lit for a chunkier glow)
     var tube = lit ? "#ff3ea5" : "#402a3a";
     b.globalAlpha = flick;
     rect(sx, top, w, 1, tube); rect(sx, top + h - 1, w, 1, tube);
     rect(sx, top, 1, h, tube); rect(sx + w - 1, top, 1, h, tube);
-    if (lit) { b.globalAlpha = 0.22; rect(sx - 1, top - 1, w + 2, h + 2, "#ff3ea5"); }
+    if (lit) {
+      var t2 = "#ff8ad0";
+      rect(sx + 1, top + 1, w - 2, 1, t2); rect(sx + 1, top + h - 2, w - 2, 1, t2);
+      b.globalAlpha = 0.22; rect(sx - 1, top - 1, w + 2, h + 2, "#ff3ea5");
+    }
     b.globalAlpha = 1;
     // temperature digits (always shown; brighter when neon is lit)
     var col = lit ? "#5ff0ff" : (dayT < 0.35 ? "#6f6a55" : "#8c86b0");
     var s = W.temp == null ? "--" : String(W.temp);
     if (s.length > 2) s = s.slice(0, 2);
-    var tx = sx + Math.round((w - (s.length * 4 - 1)) / 2), ty = top + 3;
+    var deg = W.temp != null ? 2 : 0;                        // room for a degree tick
+    var wpx = s.length * 4 - 1 + deg;
+    var tx = sx + Math.round((w - wpx) / 2), ty = top + Math.round((h - 5) / 2);
     for (var i = 0; i < s.length; i++) { glyph(s[i], tx + i * 4, ty, col); }
-    // degree tick + F
-    if (W.temp != null) { px(tx + s.length * 4 - 1, ty, col); }
+    if (deg) { var dx = tx + s.length * 4; px(dx, ty, col); px(dx + 1, ty, col); px(dx, ty + 1, col); px(dx + 1, ty + 1, col); }
   }
 
-  // Wind-swept palm on the beach (behind the road).
+  // Wind-swept palm on the beach (behind the road): a pronounced curved trunk
+  // and long fronds that arc out then droop down.
   function drawPalm(now, dayT, frame) {
-    var baseX = 9, baseY = SANDTOP + 1, topY = 10;
+    var baseX = 7, baseY = SANDTOP + 1, topY = 9;
     var windN = clamp(W.windKph / 45, 0.08, 1.1);
-    var sway = Math.sin(frame * (0.05 + windN * 0.06)) * (1 + windN * 3);
+    var sway = Math.sin(frame * (0.05 + windN * 0.06)) * (0.6 + windN * 2.2);
+    var bend = 7;                        // permanent lean of the crown down-coast
     var trunk = dayT < 0.35 ? "#4a361f" : "#7a5636";
+    var hx = baseX, hy = topY;
     for (var y = baseY; y >= topY; y--) {
       var t = (baseY - y) / (baseY - topY);
-      var xoff = Math.round(sway * t * t);
-      rect(baseX + xoff, y, 2, 1, mix(trunk, "#3a2a18", t * 0.3));
+      var xoff = Math.round((bend + sway) * t * t);       // quadratic arc — curls over
+      rect(baseX + xoff, y, 2, 1, mix(trunk, "#3a2a18", t * 0.35));
+      if (y === topY) { hx = baseX + xoff + 1; }
     }
-    var hx = baseX + Math.round(sway) , hy = topY;
     var frond = dayT < 0.35 ? "#1f5e3a" : "#2f8d54";
     var frond2 = dayT < 0.35 ? "#17492d" : "#256e41";
-    // fronds radiating, tips bending with the wind
-    var dirs = [[-4, -1], [-3, -3], [0, -4], [3, -3], [4, -1], [-2, 1], [2, 1]];
-    for (var i = 0; i < dirs.length; i++) {
-      var ex = hx + dirs[i][0] + Math.round(sway * 0.5), ey = hy + dirs[i][1];
-      line(hx, hy, ex, ey, i % 2 ? frond2 : frond);
-      px(ex, ey + 1, frond2);
+    var tip = Math.round(sway * 0.7);
+    // each frond: [outDx, outDy, droopDx, droopDy] — out from crown, then hang down.
+    var F = [
+      [-5, -1, -2, 3], [-4, -3, -1, 4], [-1, -4, 0, 4],
+      [3, -4, 1, 4], [6, -2, 2, 4], [-3, 1, -1, 4], [4, 0, 1, 4]
+    ];
+    for (var i = 0; i < F.length; i++) {
+      var mx = hx + F[i][0] + tip, my = hy + F[i][1];
+      var ex = mx + F[i][2] + tip, ey = my + F[i][3];
+      line(hx, hy, mx, my, i % 2 ? frond2 : frond);       // out
+      line(mx, my, ex, ey, i % 2 ? frond2 : frond);       // droop down
+      px(ex, ey, frond2);
     }
     disc(hx, hy, 1, frond);
-    // coconuts
+    // coconuts nestled under the crown
     px(hx - 1, hy + 1, "#3a2a18"); px(hx + 1, hy + 1, "#3a2a18");
   }
   function line(x0, y0, x1, y1, c) {

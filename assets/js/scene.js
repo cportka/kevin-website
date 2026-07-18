@@ -581,7 +581,7 @@
   // walking (umbrella for rain/fog, gas mask for heavy smog) on past the sign
   // and out of frame. At night a cat pads down the beach instead — hunched and
   // quick when the weather turns foul.
-  var walker = null, nextWalker = 90;
+  var walker = null, nextWalker = 90, SETTLE = 6;   // frames each transition pose is held
   function badWx() { return (W.code >= 45) || (W.aqi >= 160); }   // rain/fog/snow/storm, or heavy smog
   function spawnWalker(dayT) {
     var day = dayT > 0.45;
@@ -593,7 +593,7 @@
       state: "walking",
       stops: day && !bad,                        // only a fair-weather day woman settles down
       targetX: 13 + Math.floor(rng() * 6),       // settle clear of the sign, to the left
-      dwell: 0,
+      dwell: 0, tp: 0,                            // tp = frames elapsed in the current lie-down / get-up transition
       speed: bad ? (day ? 0.30 : 0.55) : (day ? 0.22 : 0.34)
     };
   }
@@ -602,11 +602,15 @@
     var w = walker;
     if (w.state === "walking") {
       w.x += w.speed * w.dir;
-      if (w.stops && w.x >= w.targetX) { w.state = "sunbathing"; w.dwell = 330 + Math.floor(rng() * 90); }  // ~30s
+      if (w.stops && w.x >= w.targetX) { w.state = "lyingdown"; w.tp = 0; }   // fold down onto the towel
       else if (w.x > L + 10) { walker = null; nextWalker = frame + Math.round(60 + rng() * 60); }   // next one strolls out in 5-10s
+    } else if (w.state === "lyingdown") {                      // stand → crouch → propped → recline
+      if (++w.tp >= 2 * SETTLE) { w.state = "sunbathing"; w.dwell = 330 + Math.floor(rng() * 90); }  // ~30s
     } else if (w.state === "sunbathing") {
       w.dwell--;
-      if (w.dwell <= 0 || badWx()) { w.state = "leaving"; }   // pack up if the weather turns
+      if (w.dwell <= 0 || badWx()) { w.state = "gettingup"; w.tp = 0; }   // pack up if the weather turns
+    } else if (w.state === "gettingup") {                      // recline → propped → crouch → stand
+      if (++w.tp >= 2 * SETTLE) { w.state = "leaving"; }
     } else {                                                   // leaving
       w.x += w.speed * w.dir;
       if (w.x > L + 10) { walker = null; nextWalker = frame + Math.round(60 + rng() * 60); }   // next one strolls out in 5-10s
@@ -617,6 +621,8 @@
     var w = walker, x = Math.round(w.x);
     if (w.kind === "woman") {
       if (w.state === "sunbathing") drawSunbather(x, w.fy);
+      else if (w.state === "lyingdown") (w.tp < SETTLE ? drawCrouch : drawPropped)(x, w.fy);
+      else if (w.state === "gettingup") (w.tp < SETTLE ? drawPropped : drawCrouch)(x, w.fy);
       else drawWoman(x, w.fy, frame, w.gear);
     } else {
       drawCat(x, w.fy, frame, dayT, w.bad);
@@ -647,9 +653,13 @@
       px(x + 1, fy - 4, "#33482f");
     }
   }
-  function drawSunbather(x, fy) {
-    var skin = "#e8b98f", hair = "#5a3a1e", suit = "#e0445a", t1 = "#22b0c2", t2 = "#f0d24a";
+  function drawTowel(x, fy) {
+    var t1 = "#22b0c2", t2 = "#f0d24a";
     for (var i = 0; i < 9; i++) { px(x + i, fy, (i & 1) ? t1 : t2); }   // striped beach towel
+  }
+  function drawSunbather(x, fy) {
+    var skin = "#e8b98f", hair = "#5a3a1e", suit = "#e0445a";
+    drawTowel(x, fy);
     // head + long hair resting at the left
     px(x, fy - 1, skin);                                   // face
     px(x - 1, fy - 1, hair); px(x, fy - 2, hair);          // hair behind + on top
@@ -663,6 +673,37 @@
     px(x + 6, fy - 1, skin);                               // thigh
     px(x + 7, fy - 1, skin); px(x + 7, fy - 2, skin); px(x + 7, fy - 3, skin);  // raised bent knee
     px(x + 8, fy - 1, skin);                               // shin back down to the towel
+  }
+  // Two in-between poses that bridge the standing walk and the flat recline, so
+  // she folds down (and rises) smoothly instead of snapping. Ordered tallest →
+  // flattest: stand (drawWoman) → crouch → propped → recline (drawSunbather).
+  function drawCrouch(x, fy) {
+    var skin = "#e8b98f", hair = "#5a3a1e", suit = "#e0445a";
+    drawTowel(x, fy);                                      // towel is down; she's kneeling onto it
+    // head bowed forward over bent knees
+    px(x + 1, fy - 4, hair); px(x + 2, fy - 4, hair);      // hair crown
+    px(x + 1, fy - 3, hair); px(x + 2, fy - 3, skin);      // hair back, face
+    // torso curled down, one arm reaching to the towel
+    px(x + 2, fy - 2, suit);                               // bikini top
+    px(x + 3, fy - 2, skin);                               // shoulder / reaching arm
+    px(x + 2, fy - 1, suit);                               // hip settling
+    px(x + 3, fy - 1, skin); px(x + 4, fy - 1, skin);      // folded thighs
+    px(x + 4, fy, skin); px(x + 5, fy, skin);              // shins / feet tucked on the towel
+  }
+  function drawPropped(x, fy) {
+    var skin = "#e8b98f", hair = "#5a3a1e", suit = "#e0445a";
+    drawTowel(x, fy);
+    // head lifted, propped back on one arm at the left
+    px(x, fy - 2, hair);                                   // hair crown
+    px(x + 1, fy - 2, skin);                               // face
+    px(x, fy - 1, hair);                                   // hair to the shoulder / propping arm
+    // reclining torso, legs stretching out to the right
+    px(x + 1, fy - 1, suit);                               // bikini top
+    px(x + 2, fy - 1, skin); px(x + 3, fy - 1, skin);      // waist
+    px(x + 4, fy - 1, suit);                               // bikini bottom / hip
+    px(x + 5, fy - 1, skin);                               // thigh
+    px(x + 6, fy - 1, skin); px(x + 6, fy - 2, skin);      // knee starting to rise
+    px(x + 7, fy - 1, skin);                               // shin toward the towel
   }
   function drawCat(x, fy, frame, dayT, bad) {
     var body = dayT < 0.35 ? "#b98a52" : "#d99a4a", dark = dayT < 0.35 ? "#8a6636" : "#b06a2a";
@@ -860,8 +901,9 @@
     };
     window.__setWalker = function (opts) {
       walker = Object.assign({ x: 20, dir: 1, fy: ROADTOP - 4, state: "walking", stops: false,
-        targetX: 20, dwell: 999, speed: 0, kind: "woman", bad: false, gear: null }, opts || {});
+        targetX: 20, dwell: 999, tp: 0, speed: 0, kind: "woman", bad: false, gear: null }, opts || {});
     };
+    window.__walkerState = function () { return walker ? walker.state : null; };
   }
 
   describe();

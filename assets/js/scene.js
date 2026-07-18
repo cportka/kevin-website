@@ -369,35 +369,49 @@
     for (var r = 0; r < 5; r++) for (var k = 0; k < 3; k++) if (g[r][k] === "1") px(x + k, y + r, c);
   }
 
-  // Neon billboard beside the road: lights up around sunset -> dusk, shows temp.
+  // Roadside billboard: a bright, playful board by day that transitions to a
+  // noir neon sign at sunset, holds through the night, and flips back at dawn.
+  // Driven entirely by dayT (1 = day, 0 = night), so `neon` = 1 - dayT tracks
+  // the same ~55-min twilight envelope the whole scene uses.
   function drawSign(now, dayT, frame) {
     var sx = 29, top = 21, w = 19, h = 15;
-    var lit = now >= W.sunset - 3 && now <= W.sunset + 35;   // sunset -> dusk
-    var flick = lit && ((frame >> 1) % 17 === 0) ? 0.55 : 1;
+    var neon = clamp(1 - dayT, 0, 1);                 // 0 = full day, 1 = full night
+    var inner = clamp((neon - 0.25) / 0.75, 0, 1);    // inner tubes + glow arrive later in dusk
+    var flick = (neon > 0.6 && (frame >> 1) % 17 === 0) ? 0.6 : 1;
     // twin posts down to the road
-    var postC = dayT < 0.35 ? "#2a2a30" : "#4a4a52";
+    var postC = mix("#4a4a52", "#2a2a30", neon);
     rect(sx + 4, top + h, 2, ROADBOT - (top + h) - 1, postC);
     rect(sx + w - 6, top + h, 2, ROADBOT - (top + h) - 1, postC);
-    // panel
-    rect(sx, top, w, h, lit ? "#150f1f" : (dayT < 0.35 ? "#14141a" : "#20202a"));
-    // neon tube border (double line when lit for a chunkier glow)
-    var tube = lit ? "#ff3ea5" : "#402a3a";
+    // panel: warm cream billboard by day -> deep noir purple by night
+    rect(sx, top, w, h, mix("#f7ead2", "#160f20", neon));
+    // frame tube: sunny teal by day -> hot-magenta neon by night
+    var tube = mix("#1f9fb2", "#ff3ea5", neon);
     b.globalAlpha = flick;
     rect(sx, top, w, 1, tube); rect(sx, top + h - 1, w, 1, tube);
     rect(sx, top, 1, h, tube); rect(sx + w - 1, top, 1, h, tube);
-    if (lit) {
-      var t2 = "#ff8ad0";
-      rect(sx + 1, top + 1, w - 2, 1, t2); rect(sx + 1, top + h - 2, w - 2, 1, t2);
-      b.globalAlpha = 0.22; rect(sx - 1, top - 1, w + 2, h + 2, "#ff3ea5");
-    }
     b.globalAlpha = 1;
-    // temperature digits (always shown; brighter when neon is lit)
-    var col = lit ? "#5ff0ff" : (dayT < 0.35 ? "#6f6a55" : "#8c86b0");
+    // inner neon tube + glow halo fade in through dusk and hold overnight
+    if (inner > 0) {
+      b.globalAlpha = flick * inner;
+      rect(sx + 1, top + 1, w - 2, 1, "#ff8ad0"); rect(sx + 1, top + h - 2, w - 2, 1, "#ff8ad0");
+      b.globalAlpha = 0.22 * inner; rect(sx - 1, top - 1, w + 2, h + 2, "#ff3ea5");
+      b.globalAlpha = 1;
+    }
+    // a little sun motif in the top-left keeps the daytime board playful
+    if (neon < 0.55) {
+      b.globalAlpha = (0.55 - neon) / 0.55;
+      disc(sx + 3, top + 3, 1, "#ffcf33");
+      px(sx + 3, top + 1, "#ffcf33"); px(sx + 5, top + 3, "#ffcf33");
+      px(sx + 3, top + 5, "#ffcf33"); px(sx + 1, top + 3, "#ffcf33");
+      b.globalAlpha = 1;
+    }
+    // temperature: bold coral by day -> glowing cyan neon by night
+    var col = mix("#e8542f", "#5ff0ff", neon);
     var s = W.temp == null ? "--" : String(W.temp);
     if (s.length > 2) s = s.slice(0, 2);
     var deg = W.temp != null ? 2 : 0;                        // room for a degree tick
     var wpx = s.length * 4 - 1 + deg;
-    var tx = sx + Math.round((w - wpx) / 2), ty = top + Math.round((h - 5) / 2);
+    var tx = sx + Math.round((w - wpx) / 2), ty = top + Math.round((h - 5) / 2) + 1;
     for (var i = 0; i < s.length; i++) { glyph(s[i], tx + i * 4, ty, col); }
     if (deg) { var dx = tx + s.length * 4; px(dx, ty, col); px(dx + 1, ty, col); px(dx, ty + 1, col); px(dx + 1, ty + 1, col); }
   }
@@ -442,53 +456,122 @@
   }
 
   // ---- cars ---------------------------------------------------------------
+  // Two lanes with realistic flow: the NEAR lane (front, lower) drives RIGHT and
+  // the FAR lane (back, higher) drives LEFT. Direction and baseline both follow
+  // the lane, and every sprite is drawn nose-RIGHT — the flip below turns the
+  // left-bound (far-lane) traffic around, so cars always face where they head.
   var CARS = ["pickup", "semi", "sports", "hybrid", "moto", "logging", "electric", "jalopy"];
+  var LANE_NEAR = 45, LANE_FAR = 41;                    // wheel baselines
   var cars = [], nextSpawn = 30, rnd = 1;
   function rng() { rnd = (rnd * 1103515245 + 12345) & 0x7fffffff; return rnd / 0x7fffffff; }
   function spawnCar(frame) {
     var type = CARS[(Math.floor(rng() * CARS.length)) % CARS.length];
-    var dir = rng() < 0.62 ? 1 : -1;                    // mostly left->right
-    var speed = (type === "moto" ? 0.9 : type === "sports" ? 0.85 : type === "semi" || type === "logging" ? 0.45 : 0.6) * (0.8 + rng() * 0.5);
-    cars.push({ type: type, dir: dir, x: dir > 0 ? -16 : L + 16, speed: speed });
+    var near = rng() < 0.5;                             // near -> right, far -> left
+    var dir = near ? 1 : -1;
+    var yb = near ? LANE_NEAR : LANE_FAR;
+    var base = (type === "moto" ? 0.9 : type === "sports" ? 0.85 : type === "semi" || type === "logging" ? 0.45 : 0.6);
+    var speed = base * (0.8 + rng() * 0.5) * (near ? 1 : 0.92);
+    cars.push({ type: type, dir: dir, near: near, yb: yb, x: dir > 0 ? -carLen(type) - 4 : L + 4, speed: speed });
   }
-  function carLen(t) { return t === "semi" ? 20 : t === "logging" ? 18 : t === "moto" ? 6 : t === "sports" ? 12 : 11; }
+  function carLen(t) { return t === "semi" ? 20 : t === "logging" ? 18 : t === "moto" ? 9 : t === "sports" ? 12 : 11; }
+
+  // Motorcycle (nose-right): two spaced wheels, a leaning rider, handlebars and
+  // headlight up front, a red tail lamp at the back.
+  function drawMoto(x, yb, col, night) {
+    var frameC = "#26262b", tank = col("#d23b3b"), jacket = col("#3a63b8"), skin = "#d7a26a", chrome = "#aab0b6";
+    // wheels, spaced: rear-left, front-right
+    disc(x + 1, yb, 1, "#0c0c0c"); px(x + 1, yb, chrome);
+    disc(x + 8, yb, 1, "#0c0c0c"); px(x + 8, yb, chrome);
+    // frame spine + fuel tank
+    rect(x + 2, yb - 1, 6, 1, frameC);
+    rect(x + 4, yb - 2, 2, 1, tank);
+    // front fork, handlebar, headlight at the nose
+    px(x + 7, yb - 2, frameC); px(x + 8, yb - 3, chrome);
+    px(x + 9, yb - 2, night ? "#fff2b0" : "#ffe6a0");
+    // rider in a blue jacket, leaning forward toward the bars (distinct from the dark bike)
+    px(x + 3, yb - 2, jacket);                              // hip / seat
+    px(x + 4, yb - 3, jacket); px(x + 5, yb - 3, jacket); px(x + 6, yb - 3, jacket);  // back + shoulder
+    px(x + 5, yb - 4, skin);                                // head
+    px(x + 5, yb - 5, night ? "#20202a" : "#22356a");       // helmet
+    px(x + 7, yb - 3, skin);                                // arm/hand on the bar
+    px(x, yb - 2, "#7a1f1f");                               // tail lamp (rear-left)
+  }
 
   function drawCar(car, dayT) {
-    var t = car.type, x = Math.round(car.x), yb = ROADBOT - 2 + roadY(x + 4); // wheel baseline
+    var t = car.type, x = Math.round(car.x), yb = car.yb;  // wheel baseline set by lane
     b.save();
     if (car.dir < 0) { b.translate(x + carLen(t), 0); b.scale(-1, 1); b.translate(-x, 0); }
-    var dim = dayT < 0.35 ? 0.62 : 1;                    // headlights instead of colour at night
-    function col(c) { return dayT < 0.35 ? mix(c, "#20202c", 0.55) : c; }
-    var W_ = "#bfe8ff";                                  // window glass
+    var night = dayT < 0.35;                               // headlights instead of colour at night
+    function col(c) { return night ? mix(c, "#20202c", 0.55) : c; }
+    var W_ = "#bfe8ff";                                    // window glass
     if (t === "pickup") {
-      rect(x, yb - 4, 11, 4, col("#3f7fae")); rect(x + 1, yb - 6, 5, 2, col("#3f7fae")); rect(x + 2, yb - 6, 3, 2, W_);
-      rect(x + 6, yb - 3, 5, 1, col("#2b5c80"));
+      rect(x, yb - 4, 11, 4, col("#3f7fae"));              // body
+      rect(x + 5, yb - 6, 5, 2, col("#3f7fae"));           // cab (front-right)
+      rect(x + 6, yb - 6, 3, 2, W_);                       // windshield
+      rect(x, yb - 3, 5, 1, col("#2b5c80"));               // bed (rear-left)
     } else if (t === "semi") {
-      rect(x, yb - 5, 5, 5, col("#c23b3b")); rect(x + 1, yb - 4, 3, 2, W_);
-      rect(x + 5, yb - 6, 15, 6, col("#e6e6ea")); px(x + 5, yb - 6, "#888");
+      rect(x, yb - 6, 15, 6, col("#e6e6ea")); px(x + 14, yb - 6, "#888");  // trailer (rear-left)
+      rect(x + 15, yb - 5, 5, 5, col("#c23b3b"));          // cab (front-right)
+      rect(x + 16, yb - 4, 3, 2, W_);                      // cab window
     } else if (t === "sports") {
-      rect(x, yb - 3, 12, 3, col("#e02a2a")); rect(x + 3, yb - 4, 6, 1, col("#e02a2a")); rect(x + 4, yb - 4, 4, 1, W_);
-      px(x + 11, yb - 3, "#ffd27a");
+      rect(x, yb - 3, 12, 3, col("#e02a2a"));
+      rect(x + 3, yb - 4, 6, 1, col("#e02a2a")); rect(x + 5, yb - 4, 4, 1, W_);
+      if (!night) px(x + 11, yb - 3, "#ffd27a");
     } else if (t === "hybrid") {
-      rect(x, yb - 4, 10, 4, col("#3aa06a")); rect(x + 2, yb - 5, 6, 2, W_); px(x, yb - 3, "#2b6f4a");
+      rect(x, yb - 4, 10, 4, col("#3aa06a")); rect(x + 2, yb - 5, 6, 2, W_);
     } else if (t === "moto") {
-      rect(x + 1, yb - 3, 4, 2, col("#2a2a2e")); px(x + 3, yb - 4, col("#c23b3b")); px(x + 3, yb - 5, "#222");
+      drawMoto(x, yb, col, night);
     } else if (t === "logging") {
-      rect(x, yb - 5, 5, 5, col("#5a6b3a")); rect(x + 1, yb - 4, 3, 2, W_);
-      rect(x + 5, yb - 3, 13, 3, col("#4a3a28"));
-      for (var i = 0; i < 4; i++) { disc(x + 7 + i * 3, yb - 4, 1, col("#8a5a34")); }
+      rect(x, yb - 3, 13, 3, col("#4a3a28"));              // log bed (rear-left)
+      for (var i = 0; i < 4; i++) { disc(x + 2 + i * 3, yb - 4, 1, col("#8a5a34")); }  // logs
+      rect(x + 13, yb - 5, 5, 5, col("#5a6b3a"));          // cab (front-right)
+      rect(x + 14, yb - 4, 3, 2, W_);
     } else if (t === "electric") {
-      rect(x, yb - 4, 10, 4, col("#dfe8ee")); rect(x + 2, yb - 5, 6, 2, W_); px(x + 10, yb - 4, "#34e5ff"); px(x + 10, yb - 3, "#34e5ff");
+      rect(x, yb - 4, 10, 4, col("#dfe8ee")); rect(x + 2, yb - 5, 6, 2, W_);
+      px(x + 9, yb - 4, "#34e5ff"); px(x + 9, yb - 3, "#34e5ff");   // accent (front-right)
     } else { // jalopy
-      rect(x, yb - 4, 11, 4, col("#8a6a3a")); rect(x + 2, yb - 5, 4, 2, W_); px(x + 1, yb - 4, "#6a4a24"); px(x + 8, yb - 4, "#6a4a24");
-      if (dayT >= 0.35 && (Date.now() >> 8) % 3 === 0) px(x - 1, yb - 5, "#9a9a9a"); // exhaust puff
+      rect(x, yb - 4, 11, 4, col("#8a6a3a")); rect(x + 4, yb - 5, 4, 2, W_);
+      px(x + 2, yb - 4, "#6a4a24"); px(x + 8, yb - 4, "#6a4a24");
+      if (!night && (frame >> 3) % 3 === 0) px(x - 1, yb - 5, "#9a9a9a");  // exhaust (rear-left)
     }
-    // wheels
-    px(x + 2, yb, "#111"); px(x + carLen(t) - 3, yb, "#111");
-    if (t === "semi" || t === "logging") px(x + 8, yb, "#111");
-    // headlight beam at night
-    if (dayT < 0.35) { var hx = car.dir > 0 ? x + carLen(t) : x; px(hx, yb - 2, "#fff2b0"); }
+    // wheels (the motorcycle draws its own)
+    if (t !== "moto") {
+      px(x + 2, yb, "#111"); px(x + carLen(t) - 3, yb, "#111");
+      if (t === "semi" || t === "logging") px(x + 8, yb, "#111");
+    }
+    // headlight beam at night — always at the nose (right in local coords)
+    if (night && t !== "moto") { px(x + carLen(t) - 1, yb - 2, "#fff2b0"); }
     b.restore();
+  }
+
+  // ---- birds --------------------------------------------------------------
+  // Once in a while a seagull flaps across the sky over the water; rarely a
+  // brown pelican glides through instead. Wings flap with the frame counter.
+  var birds = [], nextBird = 80;
+  function spawnBird(frame) {
+    var pelican = rng() < 0.18;                          // gull common, pelican rare
+    var dir = rng() < 0.5 ? 1 : -1;
+    var y = 12 + Math.floor(rng() * 10);                 // low sky, over the sea
+    var speed = (pelican ? 0.32 : 0.5) * (0.85 + rng() * 0.5);
+    birds.push({ kind: pelican ? "pelican" : "gull", dir: dir, y: y, speed: speed,
+      x: dir > 0 ? -6 : L + 6, ph: Math.floor(rng() * 4) });
+  }
+  function drawBird(bird, dayT) {
+    var x = Math.round(bird.x), y = bird.y, d = bird.dir;
+    var up = (((frame >> 2) + bird.ph) & 1) === 0;       // wing-flap phase
+    if (bird.kind === "gull") {                          // classic two-arc "⌒⌒" gull, flapping
+      var c = dayT < 0.3 ? "#aab3bd" : "#f2f6fa";
+      if (up) { px(x - 2, y, c); px(x - 1, y - 1, c); px(x, y, c); px(x + 1, y - 1, c); px(x + 2, y, c); }
+      else    { px(x - 2, y - 1, c); px(x - 1, y, c); px(x, y - 1, c); px(x + 1, y, c); px(x + 2, y - 1, c); }
+    } else {                                             // pelican: broad wings, body + drooping bill
+      var body = dayT < 0.3 ? "#5a4330" : "#7a5636";
+      var bill = dayT < 0.3 ? "#9a7a3a" : "#e0b45a";
+      if (up) { px(x - 3, y, body); px(x - 2, y - 1, body); px(x - 1, y - 1, body); px(x + 1, y - 1, body); px(x + 2, y - 1, body); px(x + 3, y, body); }
+      else    { px(x - 3, y - 1, body); px(x - 2, y, body); px(x - 1, y, body); px(x + 1, y, body); px(x + 2, y, body); px(x + 3, y - 1, body); }
+      px(x, y, body);                                     // body (the dip between wings)
+      px(x + d, y, body);                                 // head toward travel
+      px(x + 2 * d, y + 1, bill); px(x + 3 * d, y + 1, bill);   // long bill, drooping down-forward
+    }
   }
 
   // =========================================================================
@@ -508,20 +591,30 @@
     drawClouds(now, dayT, frame, sky);
     var oceanBot = drawOcean(frame);
     drawSand(oceanBot, dayT);
+    // birds crossing the sky over the water (behind the palm and road)
+    if (!reduce) {
+      if (frame >= nextBird && birds.length < 2) { spawnBird(frame); nextBird = frame + Math.round(260 + rng() * 520); }
+      for (var bi = birds.length - 1; bi >= 0; bi--) {
+        var bd = birds[bi]; bd.x += bd.speed * bd.dir;
+        if (bd.x < -8 || bd.x > L + 8) { birds.splice(bi, 1); continue; }
+        drawBird(bd, dayT);
+      }
+    }
     drawPalm(now, dayT, frame);
     drawRoad(dayT);
     drawForeground(dayT);
     drawSign(now, dayT, frame);
     if (W.code >= 51 && W.code <= 82) { drawRain(frame, dayT); }
 
-    // cars
+    // cars — advance/cull, then draw the far (left-bound) lane behind the near
     if (!reduce) {
-      if (frame >= nextSpawn && cars.length < 2) { spawnCar(frame); nextSpawn = frame + Math.round(28 + rng() * 70); }
+      if (frame >= nextSpawn && cars.length < 3) { spawnCar(frame); nextSpawn = frame + Math.round(24 + rng() * 64); }
       for (var i = cars.length - 1; i >= 0; i--) {
         var car = cars[i]; car.x += car.speed * car.dir;
-        if (car.x < -24 || car.x > L + 24) { cars.splice(i, 1); continue; }
-        drawCar(car, dayT);
+        if (car.x < -carLen(car.type) - 10 || car.x > L + carLen(car.type) + 10) { cars.splice(i, 1); }
       }
+      for (var p = 0; p < cars.length; p++) { if (!cars[p].near) drawCar(cars[p], dayT); }
+      for (var q = 0; q < cars.length; q++) { if (cars[q].near) drawCar(cars[q], dayT); }
     }
     // subtle vignette/frame
     b.globalAlpha = 0.14; rect(0, 0, L, 1, "#000"); rect(0, L - 1, L, 1, "#000"); b.globalAlpha = 1;
@@ -633,6 +726,18 @@
     window.addEventListener("resize", function () { if (expanded && !animating) { sizeExpanded(); } });
   }
   if (!document.body.classList.contains("weather")) { wireZoom(); }
+
+  // Test-only hooks (guarded; never active in production) for visual regression:
+  // place a stationary car / bird at a known spot so a screenshot is deterministic.
+  if (window.__sceneTest) {
+    window.__spawnCar = function (type, near, x) {
+      cars.push({ type: type, dir: near ? 1 : -1, near: !!near, yb: near ? LANE_NEAR : LANE_FAR,
+        x: x == null ? (near ? 8 : L - 8 - carLen(type)) : x, speed: 0 });
+    };
+    window.__spawnBird = function (kind, dir, x, y) {
+      birds.push({ kind: kind, dir: dir || 1, y: y || 15, speed: 0, x: x == null ? 25 : x, ph: 0 });
+    };
+  }
 
   describe();
   loadData();

@@ -2,7 +2,7 @@
 
 Portfolio site for **Kevin Haulihan** — director / writer / producer.
 
-**Version:** 1.11.1
+**Version:** 1.12.0
 
 A hand-written static site (no framework), deployed to GitHub Pages via GitHub Actions. The
 design takes its cues from [mouthwash.studio](https://mouthwash.studio/): a white background,
@@ -22,7 +22,7 @@ index.html              # the whole page
 weather.html            # /weather — the diorama alone, centered + integer-scaled
 assets/
   css/style.css         # design system + layout
-  js/main.js            # scroll reveal, theme toggle, intro, scroll counter
+  js/main.js            # scroll reveal, intro, scroll counter
   js/scene.js           # living pixel-art LA beach weather diorama (corner widget; click to zoom)
   img/                  # project thumbnails (.webp + .jpg fallback)
   video/                # reel (.mp4) + poster

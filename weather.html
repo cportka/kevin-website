@@ -18,13 +18,8 @@
   <script>
 (function () {
   var root = document.documentElement;
-  try {
-    var stored = localStorage.getItem("theme");
-    // First visit defaults to LIGHT, matching the rest of the site.
-    root.setAttribute("data-theme", (stored === "light" || stored === "dark") ? stored : "light");
-  } catch (e) {
-    root.setAttribute("data-theme", "light");
-  }
+  // Light-only site, matching the rest of the pages.
+  root.setAttribute("data-theme", "light");
 
   // Integer-only upscale: pick the biggest N so N*100px fits the smaller viewport
   // axis (with a little breathing room). Keeps every source pixel a whole block —
@@ -45,7 +40,7 @@
   <!-- Content Security Policy: same-origin only, plus the keyless
        weather/marine/air-quality/tide data APIs the diorama reads (connect-src,
        data only). No third-party scripts, styles, or fonts on this page. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self' 'sha256-ggBU9urHZbZzS5Mw4yaLNEzoFSmg3qEseuHrMZjRCB0='; connect-src 'self' https://api.open-meteo.com https://marine-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.tidesandcurrents.noaa.gov; base-uri 'self'; form-action 'none'; object-src 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self' 'sha256-JOwR4M9FmFiLSdoQpNH8kzvz3rmDnCOtoGMpLoxcVsc='; connect-src 'self' https://api.open-meteo.com https://marine-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.tidesandcurrents.noaa.gov; base-uri 'self'; form-action 'none'; object-src 'none'" />
 
   <!-- Icons / manifest -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />

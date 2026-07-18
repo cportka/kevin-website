@@ -480,6 +480,9 @@ ul { list-style: none; margin: 0; padding: 0; }
   position: fixed;
   right: var(--corner-inset);
   bottom: var(--corner-inset);
+  width: 100px;                 /* match the widget's width so the text ... */
+  text-align: center;           /* ... sits centered directly under it */
+  text-indent: 0.14em;          /* offset the trailing letter-spacing for true centering */
   font-family: var(--font-mono);
   font-size: var(--fs-index);
   letter-spacing: 0.14em;
@@ -519,6 +522,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 }
 @media (max-width: 460px) {
   .scene { width: 84px; height: 84px; bottom: calc(var(--corner-inset) + 26px); }
+  .folio { width: 84px; }   /* keep the counter centered under the smaller widget */
 }
 @media (prefers-reduced-motion: reduce) {
   .scene { transition: none; transform: none; opacity: 1; }

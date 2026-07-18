@@ -4,6 +4,30 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-07-18
+
+### Added
+- **Seabirds over the water.** Once in a while a **seagull** flaps across the sky
+  above the ocean; **rarely a brown pelican** glides through instead (drooping
+  bill and all). Wings flap with the animation clock; day/night tinted.
+
+### Changed
+- **Two-lane traffic that flows correctly.** The **near lane drives right** and
+  the **far lane drives left**, and every vehicle now faces its direction of
+  travel — all eight sprites are drawn nose-right and mirrored for the left-bound
+  lane, so trucks no longer appear to drive backwards. The far lane renders
+  behind the near lane for depth.
+- **The motorcycle is now recognizably a motorcycle** — two spaced wheels, a
+  blue-jacketed rider leaning into the bars, headlight up front and a red tail
+  lamp — replacing the old indistinct blob.
+- **The billboard now lives on a full day↔night cycle.** By day it's a bright,
+  playful board (cream panel, teal frame, bold coral temperature, a little sun);
+  at sunset it transitions into a noir **neon sign** (magenta tubes, glowing cyan
+  digits, halo) and holds through the night, flipping back at dawn — all driven
+  by the same twilight envelope as the rest of the scene.
+- **The 000/100 scroll counter is centered under the corner widget** (matched to
+  the widget's width, so it lines up on both desktop and mobile).
+
 ## [1.10.0] - 2026-07-18
 
 ### Added
@@ -221,6 +245,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.11.0]: https://github.com/cportka/kevin-website/releases/tag/v1.11.0
 [1.10.0]: https://github.com/cportka/kevin-website/releases/tag/v1.10.0
 [1.9.0]: https://github.com/cportka/kevin-website/releases/tag/v1.9.0
 [1.8.1]: https://github.com/cportka/kevin-website/releases/tag/v1.8.1

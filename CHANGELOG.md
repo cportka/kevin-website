@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.1] - 2026-07-18
+
+### Changed
+- Diorama polish: the coast road is now **straight** (dropped the wavy curve);
+  the **neon billboard is larger** (twin posts, chunkier glow, and a proper
+  degree symbol on the temperature); and the **palm has a pronounced curved,
+  drooping silhouette** — the trunk arcs over and the fronds hang down, still
+  swaying with LA wind.
+
 ## [1.8.0] - 2026-07-17
 
 ### Changed
@@ -183,6 +192,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.8.1]: https://github.com/cportka/kevin-website/releases/tag/v1.8.1
 [1.8.0]: https://github.com/cportka/kevin-website/releases/tag/v1.8.0
 [1.7.0]: https://github.com/cportka/kevin-website/releases/tag/v1.7.0
 [1.6.3]: https://github.com/cportka/kevin-website/releases/tag/v1.6.3

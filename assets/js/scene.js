@@ -374,14 +374,15 @@
   // Driven entirely by dayT (1 = day, 0 = night), so `neon` = 1 - dayT tracks
   // the same ~55-min twilight envelope the whole scene uses.
   function drawSign(now, dayT, frame) {
-    var sx = 29, top = 21, w = 19, h = 15;
+    var sx = 29, top = 18, w = 19, h = 15;
     var neon = clamp(1 - dayT, 0, 1);                 // 0 = full day, 1 = full night
     var inner = clamp((neon - 0.25) / 0.75, 0, 1);    // inner tubes + glow arrive later in dusk
     var flick = (neon > 0.6 && (frame >> 1) % 17 === 0) ? 0.6 : 1;
-    // twin posts down to the road
+    // twin posts planted in the SAND — they stop at the road's edge, never crossing it
     var postC = mix("#4a4a52", "#2a2a30", neon);
-    rect(sx + 4, top + h, 2, ROADBOT - (top + h) - 1, postC);
-    rect(sx + w - 6, top + h, 2, ROADBOT - (top + h) - 1, postC);
+    var postH = ROADTOP - (top + h);
+    rect(sx + 4, top + h, 2, postH, postC);
+    rect(sx + w - 6, top + h, 2, postH, postC);
     // panel: warm cream billboard by day -> deep noir purple by night
     rect(sx, top, w, h, mix("#f7ead2", "#160f20", neon));
     // frame tube: sunny teal by day -> hot-magenta neon by night
@@ -461,7 +462,7 @@
   // the lane, and every sprite is drawn nose-RIGHT — the flip below turns the
   // left-bound (far-lane) traffic around, so cars always face where they head.
   var CARS = ["pickup", "semi", "sports", "hybrid", "moto", "logging", "electric", "jalopy"];
-  var LANE_NEAR = 45, LANE_FAR = 41;                    // wheel baselines
+  var LANE_NEAR = 44, LANE_FAR = 40;                    // wheel baselines (sit inside each lane)
   var cars = [], nextSpawn = 30, rnd = 1;
   function rng() { rnd = (rnd * 1103515245 + 12345) & 0x7fffffff; return rnd / 0x7fffffff; }
   function spawnCar(frame) {
@@ -549,7 +550,7 @@
   // brown pelican glides through instead. Wings flap with the frame counter.
   var birds = [], nextBird = 80;
   function spawnBird(frame) {
-    var pelican = rng() < 0.18;                          // gull common, pelican rare
+    var pelican = rng() < 0.08;                          // gulls are the vast majority; pelican rare
     var dir = rng() < 0.5 ? 1 : -1;
     var y = 12 + Math.floor(rng() * 10);                 // low sky, over the sea
     var speed = (pelican ? 0.32 : 0.5) * (0.85 + rng() * 0.5);
@@ -559,8 +560,8 @@
   function drawBird(bird, dayT) {
     var x = Math.round(bird.x), y = bird.y, d = bird.dir;
     var up = (((frame >> 2) + bird.ph) & 1) === 0;       // wing-flap phase
-    if (bird.kind === "gull") {                          // classic two-arc "⌒⌒" gull, flapping
-      var c = dayT < 0.3 ? "#aab3bd" : "#f2f6fa";
+    if (bird.kind === "gull") {                          // classic two-arc "⌒⌒" gull, flapping, white
+      var c = dayT < 0.3 ? "#c8d0d8" : "#ffffff";
       if (up) { px(x - 2, y, c); px(x - 1, y - 1, c); px(x, y, c); px(x + 1, y - 1, c); px(x + 2, y, c); }
       else    { px(x - 2, y - 1, c); px(x - 1, y, c); px(x, y - 1, c); px(x + 1, y, c); px(x + 2, y - 1, c); }
     } else {                                             // pelican: broad wings, body + drooping bill

@@ -185,20 +185,33 @@ else
   skip "python3 absent — CSP hash check"
 fi
 
-# --- 7. Weather widget: JS fetch origin is allowed by the CSP -------------------------
-section "Weather widget — CSP connect-src covers the API it fetches"
-if [[ -f index.html && -f assets/js/main.js ]]; then
-  if grep -q 'api\.open-meteo\.com' assets/js/main.js; then
-    if grep -qE 'connect-src[^;]*https://api\.open-meteo\.com' index.html; then
-      pass "connect-src allows the Open-Meteo origin main.js fetches"
-    else
-      fail "main.js fetches api.open-meteo.com but the CSP connect-src does not allow it"
-    fi
+# --- 7. Every data-API origin the JS fetches is allowed by the CSP --------------------
+section "CSP connect-src covers every API origin the scripts fetch"
+if [[ $have_py -eq 1 && -f index.html ]]; then
+  BAD="$(python3 - <<'PY2'
+import re, glob, os
+html = open("index.html", encoding="utf-8").read()
+csp = re.search(r'http-equiv="Content-Security-Policy"\s+content="([^"]+)"', html)
+policy = csp.group(1) if csp else ""
+cs = re.search(r'connect-src([^;]*)', policy)
+allowed = set(re.findall(r'https://[a-z0-9.-]+', cs.group(1))) if cs else set()
+# hosts the JS actually fetches (weather/marine/air-quality/tide data services)
+hosts = set()
+for f in glob.glob("assets/js/*.js"):
+    txt = open(f, encoding="utf-8").read()
+    for h in re.findall(r'https://([a-z0-9.-]*(?:open-meteo\.com|tidesandcurrents\.noaa\.gov))', txt):
+        hosts.add("https://" + h)
+missing = [h for h in sorted(hosts) if h not in allowed]
+print("\n".join(missing))
+PY2
+)"
+  if [[ -z "$BAD" ]]; then
+    pass "connect-src allows every data-API origin the scripts fetch"
   else
-    skip "main.js does not fetch Open-Meteo — nothing to gate"
+    fail "CSP connect-src is missing origins the JS fetches:"; while IFS= read -r h; do [ -n "$h" ] && echo "        - $h"; done <<< "$BAD"
   fi
 else
-  skip "index.html or main.js absent — weather CSP check"
+  skip "python3 absent — CSP connect-src check"
 fi
 
 # --- 8. Crawl / AI-readiness files present --------------------------------------------

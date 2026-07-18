@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-07-18
+
+### Added
+- **`/weather` — a standalone view of the living LA diorama.** A new page
+  (`weather.html`) that shows *only* the pixel-art beach diorama, centered
+  horizontally and vertically and blown up to fill the screen. It scales by
+  **whole integers** (2×, 3×, 4× …) — the largest N such that an N×100px square
+  fits the smaller viewport axis — so every source pixel stays a crisp square
+  with no blur or half-pixels; the size updates live on resize. Same real Los
+  Angeles time/weather/tide/surf engine (`assets/js/scene.js`) as the corner
+  jewel, with its own tight CSP (same-origin only + the four keyless data APIs,
+  no third-party scripts/styles/fonts) and a pre-paint theme + sizing script.
+  The test suite now covers `weather.html` too: asset integrity, and the CSP
+  inline-hash and connect-src checks now validate every page against its own
+  policy.
+
 ## [1.8.1] - 2026-07-18
 
 ### Changed
@@ -192,6 +208,7 @@ All notable changes to this project are documented here. The format is based on
 - GitHub Actions pipeline: a test suite (SemVer/version sync, asset integrity, required-meta
   checks) gating a GitHub Pages deploy.
 
+[1.9.0]: https://github.com/cportka/kevin-website/releases/tag/v1.9.0
 [1.8.1]: https://github.com/cportka/kevin-website/releases/tag/v1.8.1
 [1.8.0]: https://github.com/cportka/kevin-website/releases/tag/v1.8.0
 [1.7.0]: https://github.com/cportka/kevin-website/releases/tag/v1.7.0

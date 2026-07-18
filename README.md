@@ -2,7 +2,7 @@
 
 Portfolio site for **Kevin Haulihan** — director / writer / producer.
 
-**Version:** 1.8.1
+**Version:** 1.9.0
 
 A hand-written static site (no framework), deployed to GitHub Pages via GitHub Actions. The
 design takes its cues from [mouthwash.studio](https://mouthwash.studio/): a white background,
@@ -11,13 +11,15 @@ thumbnail.
 
 ## Live site
 
-https://kevinhaulihan.online/
+https://kevinhaulihan.online/ — and https://kevinhaulihan.online/weather for the
+living LA diorama on its own, scaled up to fill the screen.
 
 ## Structure
 
 ```
 index.html              # the whole page
 404.html                # branded not-found page
+weather.html            # /weather — the diorama alone, centered + integer-scaled
 assets/
   css/style.css         # design system + layout
   js/main.js            # scroll reveal, theme toggle, intro, scroll counter

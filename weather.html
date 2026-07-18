@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Los Angeles, right now — Kevin Haulihan</title>
+  <meta name="description" content="A living pixel-art diorama of Los Angeles — its sky, sun, tide, surf, wind, and temperature, right now. From the portfolio of Kevin Haulihan." />
+  <meta name="robots" content="noindex, follow" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="canonical" href="https://kevinhaulihan.online/weather" />
+
+  <!-- Pre-paint setup, inlined so the page never flashes: (1) resolve the theme
+       (stored choice → light default); (2) size the diorama to the largest whole
+       integer multiple of its 100px base that fits the viewport, and keep it in
+       step on resize. Authorized by the CSP sha256 hash below; the test suite
+       verifies the hash matches this exact script content. -->
+  <script>
+(function () {
+  var root = document.documentElement;
+  try {
+    var stored = localStorage.getItem("theme");
+    // First visit defaults to LIGHT, matching the rest of the site.
+    root.setAttribute("data-theme", (stored === "light" || stored === "dark") ? stored : "light");
+  } catch (e) {
+    root.setAttribute("data-theme", "light");
+  }
+
+  // Integer-only upscale: pick the biggest N so N*100px fits the smaller viewport
+  // axis (with a little breathing room). Keeps every source pixel a whole block —
+  // no blur, no half-pixels. Centering is handled in CSS.
+  function fit() {
+    var pad = 16;
+    var avail = Math.min(window.innerWidth, window.innerHeight) - pad * 2;
+    var n = Math.floor(avail / 100);
+    if (n < 1) { n = 1; }
+    root.style.setProperty("--scene-size", (n * 100) + "px");
+  }
+  fit();
+  var t;
+  window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(fit, 120); });
+})();
+</script>
+
+  <!-- Content Security Policy: same-origin only, plus the keyless
+       weather/marine/air-quality/tide data APIs the diorama reads (connect-src,
+       data only). No third-party scripts, styles, or fonts on this page. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self' 'sha256-ggBU9urHZbZzS5Mw4yaLNEzoFSmg3qEseuHrMZjRCB0='; connect-src 'self' https://api.open-meteo.com https://marine-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.tidesandcurrents.noaa.gov; base-uri 'self'; form-action 'none'; object-src 'none'" />
+
+  <!-- Icons / manifest -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
+
+  <!-- Social / sharing -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Los Angeles, right now" />
+  <meta property="og:description" content="A living pixel-art diorama of Los Angeles — sky, sun, tide, surf, wind, and temperature, in real time." />
+  <meta property="og:url" content="https://kevinhaulihan.online/weather" />
+  <meta property="og:image" content="https://kevinhaulihan.online/assets/social/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Los Angeles, right now" />
+  <meta name="twitter:image" content="https://kevinhaulihan.online/assets/social/og.png" />
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body class="weather">
+  <h1 class="visually-hidden">Los Angeles right now — a live pixel-art weather diorama</h1>
+
+  <!-- The diorama mounts here (assets/js/scene.js appends the .scene canvas to
+       <body>). CSS centers it; the head script sizes it to a whole-integer
+       upscale of its 100px base. -->
+  <noscript>
+    <p class="weather-fallback">
+      This live Los Angeles diorama needs JavaScript. Visit
+      <a href="/">kevinhaulihan.online</a> for the full site.
+    </p>
+  </noscript>
+
+  <script src="assets/js/scene.js" defer></script>
+</body>
+</html>

@@ -81,6 +81,30 @@ not regret.
 7. **README mentions `data/cities/` datasets that aren't in the tarball** (the `files`
    allowlist ships `src/` only; `loadCities(url)` expects you to host them). Reasonable
    choice — just worth a sentence in the README so consumers don't go looking.
+8. **Expand/collapse snaps — there's no transition between docked and expanded.**
+   `wireZoom` toggles `is-expanded` and only the backdrop fades; the scene itself
+   jumps between its two boxes. We restored the smooth zoom from the outside: a
+   `MutationObserver` on the wrap's `class` FLIP-animates each toggle (invert from
+   the cached previous box, then release), which works because observer callbacks
+   run as microtasks — before the next paint — so the inverted first frame never
+   flashes. It survives every toggle path (click, keyboard, backdrop) without
+   touching package code, but it's ~40 lines every motion-caring consumer will
+   rewrite. *Suggestion:* build the FLIP into `wireZoom`, or at least emit
+   `expand`/`collapse` lifecycle events so hosts can animate without observing
+   class mutations.
+9. **During collapse, the scene dims under its own backdrop.** The moment
+   `is-expanded` drops, the wrap's z-index falls back to the host's docked value
+   while `.wv-backdrop` (z 9990) is still fading for ~350 ms — so the shrinking
+   scene renders *behind* the dark veil. (Our archived widget had this exact bug
+   once; it seems to be a rite of passage.) Our FLIP wrapper pins an inline
+   `z-index: 9991` on the wrap for the duration of the animation. *Suggestion:*
+   keep an `is-collapsing` class (holding the expanded z-index) on the wrap until
+   the backdrop's fade completes.
+10. **The info card can show `19:60`.** `attributes()`' `hhmm()` computes
+   `h = floor(mins/60)`, `m = round(mins % 60)` — at 19:59:36+ the rounded
+   minutes hit 60 without carrying into the hour, so "Local time" renders as
+   `19:60` (we caught it in a screenshot at dusk). *Suggestion:* round first,
+   then split: `mins = round(mins); h = floor(mins/60) % 24; m = mins % 60`.
 
 ## Integration cost, measured
 
@@ -97,5 +121,7 @@ not regret.
 
 1.0.0 is a strong first release: the hard parts (place resolution, data plumbing,
 progressive enhancement, a11y) are done well, and every rough edge above has a
-workaround that fits in a comment. Items **1, 2 and 4** are the ones most worth fixing
-upstream before other strict-CSP or corner-widget consumers hit them.
+workaround that fits in a comment (or, for #8, ~40 lines of glue — see `smoothZoom`
+in `assets/js/weather-widget.js`). Items **1, 2, 8 and 9** are the ones most worth
+fixing upstream before other strict-CSP or corner-widget consumers hit them; **10**
+is a one-line correctness fix.

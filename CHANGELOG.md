@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.3] - 2026-08-09
+
+### Documentation
+- **Diagnosed the transparent band in the diorama as an upstream bug** and
+  recorded it as feedback finding #12. `drawRoad` treats `roadBot` as exclusive
+  (painting rows 37–45) while every biome's `drawShoulder` starts at
+  `roadBot + 1` (row 47), so logical row 46 is never painted — a full-width
+  transparent row that shows the page through the scene when zoomed over the
+  translucent backdrop. Measured by reading the canvas back: coast/mountain/
+  desert/city lose row 46, ocean loses 46–48, identical day and night. Left
+  unpatched here deliberately — it's inside the package's rendered bitmap, so
+  a consumer can't fix it without forking.
+- Feedback doc also notes that findings #11 and #12 were both caught by looking
+  at screenshots rather than by tests, and suggests the pixel-readback
+  regression test that would catch them.
+
 ## [1.13.2] - 2026-08-09
 
 ### Fixed

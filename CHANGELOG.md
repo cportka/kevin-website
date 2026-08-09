@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.1] - 2026-08-09
+
+### Fixed
+- **The widget's zoom is smooth again.** weather-vivarium 1.0.0 snaps between
+  its docked and expanded states; the site now FLIP-animates every toggle from
+  the outside (a `MutationObserver` on the widget's class in
+  `assets/js/weather-widget.js` — no vendored code touched), easing the scene
+  between corner and overlay in both directions, and holding it above the
+  fading backdrop during collapse so it never dims mid-shrink. Honors reduced
+  motion. The info card is untouched.
+- Feedback doc: three new findings from this round — the missing built-in
+  transition (#8), the collapse-under-backdrop stacking slip (#9), and an
+  info-card `19:60` time-rounding bug (#10) — each with an upstream suggestion.
+
 ## [1.13.0] - 2026-08-09
 
 ### Changed

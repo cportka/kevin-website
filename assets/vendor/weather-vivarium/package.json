@@ -1,0 +1,68 @@
+{
+  "name": "weather-vivarium",
+  "version": "1.0.0",
+  "description": "A tiny living pixel-art weather diorama for any city — dependency-free, driven by real conditions (sun, rain, wind, tide, time of day, landscape, landmark).",
+  "type": "module",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "types": "src/index.d.ts",
+  "unpkg": "src/index.js",
+  "jsdelivr": "src/index.js",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "!src/**/*.md",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "bash tests/run-tests.sh",
+    "test:node": "node --test",
+    "verify:render": "node verify/render.mjs",
+    "build:cities": "node scripts/build-cities.mjs",
+    "verify:reference": "node verify/reference.mjs",
+    "update:reference": "node scripts/update-reference-snapshot.mjs",
+    "verify:replay": "node scripts/replay-cities.mjs",
+    "verify:controls": "node verify/page-controls.mjs"
+  },
+  "keywords": [
+    "weather",
+    "pixel-art",
+    "canvas",
+    "diorama",
+    "widget",
+    "open-meteo",
+    "dependency-free",
+    "generative"
+  ],
+  "author": "Chris Portka <chrisportka@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://cportka.github.io/weather-vivarium/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cportka/weather-vivarium.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cportka/weather-vivarium/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "all-the-cities": "^3.1.0",
+    "gifenc": "^1.0.3",
+    "pngjs": "^7.0.0",
+    "tz-lookup": "^6.1.25"
+  }
+}

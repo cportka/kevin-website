@@ -4,6 +4,32 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.0] - 2026-08-09
+
+### Changed
+- **The weather widget is now powered by [weather-vivarium](https://www.npmjs.com/package/weather-vivarium) `1.0.0`** —
+  the original hand-built LA diorama generalised to any city and published to npm —
+  vendored under `assets/vendor/weather-vivarium/` (the site has no build step) and
+  pinned to **Los Angeles** in the new `assets/js/weather-widget.js`. The package
+  brings its own styles, click-to-zoom overlay, and an info card listing everything
+  the diorama knows about the place. Tide is now modelled in-package (the NOAA
+  origin left the CSP; Open-Meteo geocoding joined it).
+
+### Added
+- **`archive/la-beach-diorama/`** — the original widget preserved as a runnable
+  stand-alone project (scene.js frozen at v1.12.3, plus a demo page and README).
+  Not deployed with the site.
+- Tests: the CSP connect-src check now follows the vendored package's fetch
+  surface, and a new check pins the vendored copy to the `package.json`
+  dependency version (and requires its LICENSE to ship).
+- **`docs/weather-vivarium-npm-package-feedback.md`** — grounded adoption
+  feedback on the package (pros, rough edges with suggestions, measured
+  integration cost).
+
+### Removed
+- `assets/js/scene.js` (moved to the archive) and the site's own `.scene`
+  widget/zoom/backdrop CSS — the vendored package now owns widget styling.
+
 ## [1.12.3] - 2026-07-18
 
 ### Changed

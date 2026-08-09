@@ -2,7 +2,7 @@
 
 Portfolio site for **Kevin Haulihan** — director / writer / producer.
 
-**Version:** 1.12.3
+**Version:** 1.13.0
 
 A hand-written static site (no framework), deployed to GitHub Pages via GitHub Actions. The
 design takes its cues from [mouthwash.studio](https://mouthwash.studio/): a white background,
@@ -23,17 +23,25 @@ weather.html            # /weather — the diorama alone, centered + integer-sca
 assets/
   css/style.css         # design system + layout
   js/main.js            # scroll reveal, intro, scroll counter
-  js/scene.js           # living pixel-art LA beach weather diorama (corner widget; click to zoom)
+  js/weather-widget.js  # mounts the weather diorama, pinned to Los Angeles
+  vendor/weather-vivarium/  # the diorama engine (npm: weather-vivarium@1.0.0, vendored — no build step)
   img/                  # project thumbnails (.webp + .jpg fallback)
   video/                # reel (.mp4) + poster
   social/og.png         # link-share card (1200×630)
   social/github-social.png  # GitHub repo social preview (1280×640)
+archive/la-beach-diorama/  # the original hand-built LA widget, frozen as a stand-alone project
 favicon.svg             # circular headshot favicon (embedded photo)
 apple-touch-icon.png    # 180×180 touch icon
 site.webmanifest        # PWA/brand manifest
 robots.txt, sitemap.xml, llms.txt, humans.txt
 .well-known/security.txt
 ```
+
+The corner weather widget is [**weather-vivarium**](https://www.npmjs.com/package/weather-vivarium)
+(the original hand-built LA diorama, generalised to any city and published to npm), vendored under
+`assets/vendor/` because the site deliberately has no build step, and pinned to Los Angeles in
+`assets/js/weather-widget.js`. The original widget it grew from is preserved, runnable, in
+[`archive/la-beach-diorama/`](archive/la-beach-diorama/).
 
 ## Develop
 

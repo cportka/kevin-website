@@ -468,84 +468,36 @@ ul { list-style: none; margin: 0; padding: 0; }
   z-index: 5;
 }
 
-/* LA beach diorama — a 100x100 pixel-art "jewel" floating just above the
-   folio counter, same right edge. Built by assets/js/scene.js. */
-.scene {
+/* LA weather diorama — a pixel-art "jewel" floating just above the folio
+   counter, same right edge. The widget is weather-vivarium (npm, vendored under
+   assets/vendor/, mounted by assets/js/weather-widget.js): it brings its own
+   .wv styles, sizes itself from --wv-size, and handles its own click-to-zoom
+   overlay + backdrop. The host div stays unpositioned so the widget's own
+   fixed/overlay stacking (z 9990+) works untouched; we pin the DOCKED widget
+   to the corner from here — when it expands, its own is-expanded rules (loaded
+   after this sheet) take over top/left, and fixed-position over-constraint
+   resolution drops our right/bottom. */
+.corner-vivarium { --wv-size: 100px; }
+.corner-vivarium .wv {
   position: fixed;
   right: var(--corner-inset);
   bottom: calc(var(--corner-inset) + 30px);   /* clears the folio line below */
-  width: 100px;
-  height: 100px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 6px 22px rgba(23, 21, 15, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.10);
-  pointer-events: none;
   z-index: 6;
-  opacity: 0;
-  transform: translateY(6px) scale(0.98);
-  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
-}
-.scene.is-ready { opacity: 1; transform: none; }
-:root[data-theme="dark"] .scene {
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-.scene__cv {
-  width: 100%;
-  height: 100%;
-  display: block;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;   /* fallback keyword for Firefox */
 }
 @media (max-width: 460px) {
-  .scene { width: 84px; height: 84px; bottom: calc(var(--corner-inset) + 26px); }
+  .corner-vivarium { --wv-size: 84px; }
+  .corner-vivarium .wv { bottom: calc(var(--corner-inset) + 26px); }
   .folio { width: 84px; }   /* keep the counter centered under the smaller widget */
 }
-@media (prefers-reduced-motion: reduce) {
-  .scene { transition: none; transform: none; opacity: 1; }
-}
-
-/* Click-to-zoom: the corner diorama is a button that expands to a centered,
-   integer-scaled full-screen overlay (like /weather) and docks back on a second
-   click. Wired by scene.js on the main page only (the /weather page is exempt). */
-.scene.is-interactive { pointer-events: auto; cursor: pointer; }
-.scene.is-interactive:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.scene.is-expanded {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  right: auto;
-  bottom: auto;
-  width: var(--exp-size, 100px);
-  height: var(--exp-size, 100px);
-  margin-top: calc(-1 * var(--exp-size, 100px) / 2);
-  margin-left: calc(-1 * var(--exp-size, 100px) / 2);
-  border-radius: calc(var(--exp-size, 100px) / 12);
-  box-shadow: 0 18px 60px rgba(23, 21, 15, 0.30), inset 0 0 0 1px rgba(255, 255, 255, 0.10);
-  z-index: 91;
-}
-:root[data-theme="dark"] .scene.is-expanded {
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-.scene-backdrop {
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  opacity: 0;
-  z-index: 90;
-  pointer-events: none;
-  transition: opacity 0.5s var(--ease-out);   /* matches the zoom, so it's clear by the time it docks */
-}
-.scene-backdrop.is-on { opacity: 1; pointer-events: auto; cursor: pointer; }
-html.scene-lock { overflow: hidden; }
-@media (prefers-reduced-motion: reduce) { .scene-backdrop { transition: none; } }
 
 /* ----------------------------------------------------------------------
    Standalone /weather view — the diorama on its own, centered and scaled
    up to the largest whole-integer multiple of its 100px base that fits
-   (weather.html's head script sets --scene-size; the pixels stay crisp).
+   (weather.html's head script sets --wv-size on <html>; the widget reads
+   it and the pixels stay crisp).
    ---------------------------------------------------------------------- */
-/* --scene-size is set on <html> by weather.html's head script; body must NOT
-   redeclare it (a local custom property would shadow the inherited value). */
+/* --wv-size is set on <html> by weather.html's head script; nothing below it
+   may redeclare it (a local custom property would shadow the inherited value). */
 /* Override the home page's `scrollbar-gutter: stable` (set for the intro lock):
    here there's nothing to scroll, and a reserved gutter would offset centering. */
 html:has(body.weather) { overflow: hidden; scrollbar-gutter: auto; }
@@ -555,25 +507,19 @@ body.weather {
   overflow: hidden;
   background: var(--bg);
 }
-/* Center against the VIEWPORT (position:fixed + 50/50 + negative half-size
-   margins) so a scrollbar gutter can't nudge it off-center. Margins — not a
-   transform — so the .scene.is-ready opacity/transform fade is left intact. */
-body.weather .scene {
+/* Center the host against the VIEWPORT (position:fixed + 50/50 + negative
+   half-size margins) so a scrollbar gutter can't nudge it off-center. Margins —
+   not a transform — so the widget's own is-ready fade transform is left intact.
+   The .wv inside fills it, reading the same inherited --wv-size. */
+body.weather #vivarium {
   position: fixed;
   top: 50%;
   left: 50%;
-  right: auto;
-  bottom: auto;
-  width: var(--scene-size, 100px);
-  height: var(--scene-size, 100px);
-  margin-top: calc(-1 * var(--scene-size, 100px) / 2);
-  margin-left: calc(-1 * var(--scene-size, 100px) / 2);
-  border-radius: calc(var(--scene-size, 100px) / 12);   /* keep the corner proportional */
-  box-shadow: 0 18px 60px rgba(23, 21, 15, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.10);
-  z-index: auto;
-}
-:root[data-theme="dark"] body.weather .scene {
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  width: var(--wv-size, 100px);
+  height: var(--wv-size, 100px);
+  margin-top: calc(-1 * var(--wv-size, 100px) / 2);
+  margin-left: calc(-1 * var(--wv-size, 100px) / 2);
+  line-height: 0;
 }
 .weather-fallback {
   max-width: 32rem;

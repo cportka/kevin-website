@@ -206,6 +206,7 @@
     updateFolio();
   }
 
-  // The LA weather corner widget lives in its own module (assets/js/scene.js) —
-  // a live pixel-art beach diorama loaded after this file.
+  // The LA weather corner widget lives in its own module (assets/js/weather-widget.js,
+  // mounting the vendored weather-vivarium package) — a live pixel-art diorama
+  // loaded after this file.
 })();

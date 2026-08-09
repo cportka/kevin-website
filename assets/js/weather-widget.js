@@ -54,7 +54,14 @@ function smoothZoom(wrap) {
     wrap.style.zIndex = "";
     rest();
   }
+  // Keep the overlay clear of the info card as the card resizes (rows appear as
+  // marine/air data lands, and it refills every 2s while open).
+  var card = document.querySelector(".wv-card");
+  if (card && window.ResizeObserver) {
+    new ResizeObserver(function () { if (!wrap.style.transform) fitOverlay(wrap); }).observe(card);
+  }
   new MutationObserver(function () {
+    fitOverlay(wrap);                      // correct the box before measuring it
     var now = wrap.getBoundingClientRect();
     if (!first ||
         (Math.abs(first.left - now.left) < 0.5 && Math.abs(first.top - now.top) < 0.5 &&
@@ -82,8 +89,36 @@ function smoothZoom(wrap) {
   // viewport resizing (the docked corner and the expanded size both track it),
   // and the package's own ready fade settling (it ends 4px below where it
   // starts). Inline transform is only ever set mid-FLIP, so it gates both.
-  window.addEventListener("resize", function () { if (!wrap.style.transform) rest(); });
+  // This resize listener is registered after the package's own, so our overlay
+  // fit lands on top of the size it just set.
+  window.addEventListener("resize", function () {
+    if (wrap.style.transform) return;
+    fitOverlay(wrap);
+    rest();
+  });
   wrap.addEventListener("transitionend", function (e) {
     if (e.target === wrap && !wrap.style.transform) rest();
   });
+}
+
+/* Fit the expanded overlay into the space the info card actually leaves.
+
+   weather-vivarium sizes the overlay from the viewport alone: on a wide screen
+   it reserves 350px so the card sits beside the scene, but on a narrow one the
+   card becomes a bottom sheet (up to 30vh) and the scene stays centred in the
+   FULL viewport — so the sheet covers its lower third. Size and centre the
+   scene in the band ABOVE the sheet instead, still snapping to a whole-integer
+   multiple of the 100px base so every source pixel stays a crisp square.
+   (Filed as a rough edge in docs/weather-vivarium-npm-package-feedback.md.) */
+function fitOverlay(wrap) {
+  if (!wrap.classList.contains("is-expanded")) return;
+  // Wide screens: the card is beside the scene and the package's own fit is right.
+  if (window.innerWidth >= 900) { wrap.style.removeProperty("--wv-top"); return; }
+  var card = document.querySelector(".wv-card");
+  var cardH = card && !card.hidden ? card.getBoundingClientRect().height : 0;
+  var CARD_BOTTOM = 10, GAP = 16;          // the card's own bottom offset, plus breathing room
+  var band = window.innerHeight - (cardH ? cardH + CARD_BOTTOM + GAP : 0);
+  var n = Math.floor((Math.min(window.innerWidth, band) - 32) / 100);
+  wrap.style.setProperty("--wv-exp", (n < 1 ? 1 : n) * 100 + "px");
+  wrap.style.setProperty("--wv-top", (band / 2) + "px");   // centre of the free band
 }

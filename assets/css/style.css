@@ -489,6 +489,14 @@ ul { list-style: none; margin: 0; padding: 0; }
   .corner-vivarium .wv { bottom: calc(var(--corner-inset) + 26px); }
   .folio { width: 84px; }   /* keep the counter centered under the smaller widget */
 }
+/* Zoomed: below the package's 900px breakpoint its info card becomes a bottom
+   sheet, but its overlay still centers on the whole viewport — so the sheet
+   covers the scene's lower third. weather-widget.js measures the card and sets
+   --wv-top to the center of the band above it; this override honors it (the
+   package's own margin-top of -size/2 still does the centering). */
+@media (max-width: 899px) {
+  .corner-vivarium .wv.is-expanded { top: var(--wv-top, 50%); }
+}
 
 /* ----------------------------------------------------------------------
    Standalone /weather view — the diorama on its own, centered and scaled

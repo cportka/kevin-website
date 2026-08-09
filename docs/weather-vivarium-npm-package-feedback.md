@@ -7,10 +7,15 @@ vendored under `assets/vendor/weather-vivarium/` and pinned to Los Angeles. Writ
 against `1.0.0` on 2026-08-09, from a real integration into a **no-build static site
 with a strict CSP** — probably close to the package's hardest consumer profile.
 
-**Verdict: keep.** The swap deleted ~900 lines of site-specific widget code in exchange
-for a 33-line glue module and a config object, and we *gained* features (info card,
-built-in zoom, graceful any-city support). Everything below the pros list is polish,
-not regret.
+**Verdict: keep.** The swap deleted ~900 lines of site-specific widget code and a
+whole rendering engine in exchange for a 124-line glue module, and we *gained*
+features (an info card we never had, graceful any-city support). Everything below the
+pros list is polish, not regret.
+
+> **Updated after shipping.** The first draft was written the day of the swap, when
+> the glue was 33 lines. Living with it added findings #8–#11 and roughly 90 lines of
+> that glue — all of it clustered at one seam (see the bottom line). The verdict
+> didn't change; the honest cost did, so the numbers below are the post-shipping ones.
 
 ## What worked well
 
@@ -32,9 +37,11 @@ not regret.
   widget leave `--wv-size` alone, so the host stylesheet owns sizing entirely — our
   integer-fit `/weather` page and the 84px mobile corner both worked without touching
   package code. (See cons: this behavior deserves documentation.)
-- **Interactive mode replaced ~150 lines of our zoom code** — FLIP animation, backdrop,
-  scroll lock, keyboard handling — and added an info card (20 labelled rows about the
-  place) we never had.
+- **Interactive mode covers the plumbing around a zoom** — backdrop, scroll lock,
+  focus/keyboard handling, `aria-pressed` — and adds an info card (20 labelled rows
+  about the place) we never had. *Revised:* the first draft credited it with replacing
+  our FLIP animation too. It doesn't — the motion and the mobile fit came back as
+  findings #8 and #10. What it genuinely replaced is the scaffolding, not the movement.
 - **Accessibility came along:** `role="img"` with a live descriptive label,
   Enter/Space/Escape on the widget, `aria-pressed`, `:focus-visible`, and a
   reduced-motion still frame.
@@ -88,8 +95,8 @@ not regret.
    the cached previous box, then release), which works because observer callbacks
    run as microtasks — before the next paint — so the inverted first frame never
    flashes. It survives every toggle path (click, keyboard, backdrop) without
-   touching package code, but it's ~40 lines every motion-caring consumer will
-   rewrite. *Suggestion:* build the FLIP into `wireZoom`, or at least emit
+   touching package code, but it's a ~58-line function every motion-caring
+   consumer will rewrite. *Suggestion:* build the FLIP into `wireZoom`, or at least emit
    `expand`/`collapse` lifecycle events so hosts can animate without observing
    class mutations.
 9. **During collapse, the scene dims under its own backdrop.** The moment
@@ -100,7 +107,16 @@ not regret.
    `z-index: 9991` on the wrap for the duration of the animation. *Suggestion:*
    keep an `is-collapsing` class (holding the expanded z-index) on the wrap until
    the backdrop's fade completes.
-10. **The info card can show `19:60`.** `attributes()`' `hhmm()` computes
+10. **On a phone, the info card covers the scene it describes.** Below the 900px
+   breakpoint the card becomes a bottom sheet (`bottom:10px; max-height:30vh`),
+   but `intSize()` still sizes from `min(innerWidth, innerHeight) - 32` and
+   `.wv.is-expanded` still centres on the *full* viewport — so the sheet sits on
+   top of the scene's lower third (the wide-screen path gets this right, reserving
+   350px). We measure the card and re-fit the overlay into the band above it,
+   re-snapping to a whole multiple of 100px. *Suggestion:* mirror the wide-screen
+   reservation on narrow — subtract the sheet's height from the available box and
+   centre in what's left.
+11. **The info card can show `19:60`.** `attributes()`' `hhmm()` computes
    `h = floor(mins/60)`, `m = round(mins % 60)` — at 19:59:36+ the rounded
    minutes hit 60 without carrying into the hour, so "Local time" renders as
    `19:60` (we caught it in a screenshot at dusk). *Suggestion:* round first,
@@ -110,18 +126,39 @@ not regret.
 
 | | before (scene.js) | after (weather-vivarium) |
 | --- | --- | --- |
-| site-owned widget code | 916 lines | 33-line glue |
-| site-owned widget CSS | ~110 lines (`.scene*`) | ~20 lines (host placement) |
+| site-owned widget code | 916 lines (engine + widget) | **124 lines** of glue |
+| ⤷ of which: mount + LA config | — | 34 lines |
+| ⤷ of which: zoom motion + overlay fit | — | 90 lines (findings #8–#10) |
+| site-owned widget CSS | ~110 lines (`.scene*`) | 27 lines (host placement + overlay top) |
 | vendored payload | — | 644 KB source tree (56 modules) |
 | CSP connect-src | 3 × Open-Meteo + NOAA tides | 4 × Open-Meteo (tide now modelled) |
 | CSP style-src (/weather) | `'self'` | `'self' 'unsafe-inline'` (see #2) |
-| zoom / info card / any-city | hand-rolled / none / none | included |
+| info card / any-city | none / none | included |
+| zoom motion | hand-rolled | hand-rolled again (see #8) |
+
+The engine — sky, weather, sprites, place resolution, ~800 of those 916 lines — is
+what actually left, and it isn't coming back. The glue that grew is entirely the
+zoom seam.
 
 ## Bottom line
 
 1.0.0 is a strong first release: the hard parts (place resolution, data plumbing,
 progressive enhancement, a11y) are done well, and every rough edge above has a
-workaround that fits in a comment (or, for #8, ~40 lines of glue — see `smoothZoom`
-in `assets/js/weather-widget.js`). Items **1, 2, 8 and 9** are the ones most worth
-fixing upstream before other strict-CSP or corner-widget consumers hit them; **10**
-is a one-line correctness fix.
+workaround that fits in a comment — or, for the zoom, in 90 lines (see `smoothZoom`
+/ `fitOverlay` in `assets/js/weather-widget.js`). Items **1, 2, 8, 9 and 10** are
+the ones most worth fixing upstream before other strict-CSP, mobile, or
+corner-widget consumers hit them; **11** is a one-line correctness fix.
+
+**Findings 1, 8, 9 and 10 are one seam, not four bugs.** `wireZoom`'s
+expand/collapse is the single place the package takes over layout — position,
+size, stacking, and the transition between two boxes — and it's the one place a
+host can't reach except by observing DOM mutations. Every workaround we wrote is
+the same shape: watch the class, then correct what the package just did, before
+the browser paints. Whatever form the fix takes — a built-in FLIP,
+`onExpand`/`onCollapse` hooks, or simply letting the host supply the expanded
+box — opening that one seam retires four separate workarounds and about 90 of
+our 124 glue lines. If only one thing gets done for 1.1, this is it.
+
+Everything else on the list is small and independent. Nothing here made us regret
+the swap: an ~800-line rendering engine left this repo permanently, and what came
+back is CSS-adjacent glue at a single, well-understood boundary.

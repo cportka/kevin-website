@@ -65,6 +65,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600&family=Inter:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" />
 
+  <!-- The weather widget's own stylesheet, as a real file. The id "wv-styles" is
+       the package's signal to skip its runtime <style> injection, so no inline
+       style is needed. Loaded before the site sheet so our corner rules win. -->
+  <link rel="stylesheet" id="wv-styles" href="assets/vendor/weather-vivarium/style.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
 
   <!-- Structured data -->

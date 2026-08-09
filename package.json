@@ -1,6 +1,6 @@
 {
   "name": "kevin-website",
-  "version": "1.13.3",
+  "version": "1.14.0",
   "private": true,
   "description": "Portfolio site for Kevin Haulihan — director / writer / producer.",
   "homepage": "https://kevinhaulihan.online/",
@@ -10,6 +10,6 @@
     "test": "bash tests/run-tests.sh"
   },
   "dependencies": {
-    "weather-vivarium": "1.0.0"
+    "weather-vivarium": "1.1.0"
   }
 }

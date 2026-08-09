@@ -40,10 +40,10 @@
 
   <!-- Content Security Policy: same-origin only, plus Open-Meteo's keyless
        weather/marine/air-quality/geocoding data APIs the diorama reads
-       (connect-src, data only). style-src allows inline because the vendored
-       weather-vivarium widget injects its own small stylesheet at runtime.
-       No third-party scripts, styles, or fonts on this page. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-O7tvXUggKEa4bj6ghytZjYzpFVyUSx3wCh4t1WhWaHQ='; connect-src 'self' https://api.open-meteo.com https://marine-api.open-meteo.com https://air-quality-api.open-meteo.com https://geocoding-api.open-meteo.com; base-uri 'self'; form-action 'none'; object-src 'none'" />
+       (connect-src, data only). style-src is back to a strict 'self' — the
+       widget's CSS is <link>ed above as a real file, so nothing is injected
+       inline. No third-party scripts, styles, or fonts on this page. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self' 'sha256-O7tvXUggKEa4bj6ghytZjYzpFVyUSx3wCh4t1WhWaHQ='; connect-src 'self' https://api.open-meteo.com https://marine-api.open-meteo.com https://air-quality-api.open-meteo.com https://geocoding-api.open-meteo.com; base-uri 'self'; form-action 'none'; object-src 'none'" />
 
   <!-- Icons / manifest -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -62,6 +62,10 @@
   <meta name="twitter:title" content="Los Angeles, right now" />
   <meta name="twitter:image" content="https://kevinhaulihan.online/assets/social/og.png" />
 
+  <!-- The weather widget's own stylesheet, as a real file. The id "wv-styles" is
+       the package's signal to skip its runtime <style> injection, which is what
+       lets this page keep a strict style-src 'self'. -->
+  <link rel="stylesheet" id="wv-styles" href="assets/vendor/weather-vivarium/style.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body class="weather">

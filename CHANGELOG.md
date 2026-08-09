@@ -4,6 +4,36 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] - 2026-08-09
+
+### Changed
+- **Upgraded to weather-vivarium `1.1.0`** — the release that fixes all twelve
+  findings this site reported. Everything the site had bolted on to work around
+  them is now deleted:
+  - **The zoom animation, its stacking, the mobile fit and Escape-to-close are
+    the package's.** `smoothZoom()` and `fitOverlay()` (~90 lines of
+    `MutationObserver` glue) are gone; the widget ships a built-in FLIP, fires
+    `wv:expand`/`wv:collapse`, reparents to `<body>` while expanded, and
+    reserves the info card's band on narrow screens. `assets/js/weather-widget.js`
+    is back to a 40-line mount.
+  - **`/weather` is back to a strict `style-src 'self'`.** The widget CSS now
+    ships as a real file, `<link>`ed with `id="wv-styles"` — the package's signal
+    to skip runtime `<style>` injection — so the `'unsafe-inline'` added in
+    1.13.0 is removed.
+  - **One request instead of 56.** We vendor the package's single-file `dist/`
+    bundle (plus its stylesheet, LICENSE and manifest) rather than the 56-module
+    `src/` tree: 644 KB → 236 KB, and the widget loads in 2 requests.
+  - **The transparent band below the road is gone** (the `roadBot` off-by-one),
+    the info card's clock can no longer read `19:60`, and the card gained a
+    working **Moon** row.
+- Site CSS keeps only what places the docked jewel (22 lines). One rule is new:
+  the package's `is-collapsing` class assumes a host in normal flow, so the fixed
+  corner restates its own positioning for the collapse animation.
+- Feedback doc updated throughout — every finding annotated with what shipped, the
+  cost table extended with a `1.1.0` column, and the conclusion rewritten around
+  what actually generalised: the four zoom findings were one seam, and fixing the
+  seam retired all four at once.
+
 ## [1.13.3] - 2026-08-09
 
 ### Documentation

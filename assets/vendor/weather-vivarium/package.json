@@ -1,23 +1,27 @@
 {
   "name": "weather-vivarium",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A tiny living pixel-art weather diorama for any city — dependency-free, driven by real conditions (sun, rain, wind, tide, time of day, landscape, landmark).",
   "type": "module",
   "main": "src/index.js",
   "module": "src/index.js",
   "types": "src/index.d.ts",
-  "unpkg": "src/index.js",
-  "jsdelivr": "src/index.js",
+  "unpkg": "dist/weather-vivarium.min.js",
+  "jsdelivr": "dist/weather-vivarium.min.js",
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
       "default": "./src/index.js"
     },
+    "./dist/weather-vivarium.min.js": "./dist/weather-vivarium.min.js",
+    "./style.css": "./style.css",
     "./package.json": "./package.json"
   },
   "files": [
     "src",
     "!src/**/*.md",
+    "dist",
+    "style.css",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
@@ -29,6 +33,7 @@
   "scripts": {
     "test": "bash tests/run-tests.sh",
     "test:node": "node --test",
+    "build:dist": "node scripts/build-dist.mjs",
     "verify:render": "node verify/render.mjs",
     "build:cities": "node scripts/build-cities.mjs",
     "verify:reference": "node verify/reference.mjs",
@@ -61,6 +66,7 @@
   },
   "devDependencies": {
     "all-the-cities": "^3.1.0",
+    "esbuild": "0.25.5",
     "gifenc": "^1.0.3",
     "pngjs": "^7.0.0",
     "tz-lookup": "^6.1.25"

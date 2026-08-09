@@ -470,13 +470,12 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 /* LA weather diorama — a pixel-art "jewel" floating just above the folio
    counter, same right edge. The widget is weather-vivarium (npm, vendored under
-   assets/vendor/, mounted by assets/js/weather-widget.js): it brings its own
-   .wv styles, sizes itself from --wv-size, and handles its own click-to-zoom
-   overlay + backdrop. The host div stays unpositioned so the widget's own
-   fixed/overlay stacking (z 9990+) works untouched; we pin the DOCKED widget
-   to the corner from here — when it expands, its own is-expanded rules (loaded
-   after this sheet) take over top/left, and fixed-position over-constraint
-   resolution drops our right/bottom. */
+   assets/vendor/, mounted by assets/js/weather-widget.js). It owns its own
+   styling, zoom animation, overlay and info card; all this sheet does is size
+   the docked jewel and pin it to the corner.
+
+   While expanded the widget reparents itself to <body> (leaving a placeholder
+   here), so these rules style only the docked and collapsing states. */
 .corner-vivarium { --wv-size: 100px; }
 .corner-vivarium .wv {
   position: fixed;
@@ -484,18 +483,18 @@ ul { list-style: none; margin: 0; padding: 0; }
   bottom: calc(var(--corner-inset) + 30px);   /* clears the folio line below */
   z-index: 6;
 }
+/* Mid-collapse the widget is back in this host but must stay above the fading
+   backdrop (z 9990). The package's own .is-collapsing rule assumes a host in
+   normal flow (it sets position: relative), so restate it for our fixed corner
+   — otherwise the shrinking widget would drop into page flow for the animation. */
+.corner-vivarium .wv.is-collapsing {
+  position: fixed;
+  z-index: 9991;
+}
 @media (max-width: 460px) {
   .corner-vivarium { --wv-size: 84px; }
   .corner-vivarium .wv { bottom: calc(var(--corner-inset) + 26px); }
   .folio { width: 84px; }   /* keep the counter centered under the smaller widget */
-}
-/* Zoomed: below the package's 900px breakpoint its info card becomes a bottom
-   sheet, but its overlay still centers on the whole viewport — so the sheet
-   covers the scene's lower third. weather-widget.js measures the card and sets
-   --wv-top to the center of the band above it; this override honors it (the
-   package's own margin-top of -size/2 still does the centering). */
-@media (max-width: 899px) {
-  .corner-vivarium .wv.is-expanded { top: var(--wv-top, 50%); }
 }
 
 /* ----------------------------------------------------------------------

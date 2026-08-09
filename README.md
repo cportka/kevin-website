@@ -2,7 +2,7 @@
 
 Portfolio site for **Kevin Haulihan** — director / writer / producer.
 
-**Version:** 1.13.3
+**Version:** 1.14.0
 
 A hand-written static site (no framework), deployed to GitHub Pages via GitHub Actions. The
 design takes its cues from [mouthwash.studio](https://mouthwash.studio/): a white background,
@@ -24,7 +24,7 @@ assets/
   css/style.css         # design system + layout
   js/main.js            # scroll reveal, intro, scroll counter
   js/weather-widget.js  # mounts the weather diorama, pinned to Los Angeles
-  vendor/weather-vivarium/  # the diorama engine (npm: weather-vivarium@1.0.0, vendored — no build step)
+  vendor/weather-vivarium/  # the diorama engine (npm: weather-vivarium@1.1.0 — vendored dist bundle + stylesheet)
   img/                  # project thumbnails (.webp + .jpg fallback)
   video/                # reel (.mp4) + poster
   social/og.png         # link-share card (1200×630)
@@ -40,7 +40,11 @@ robots.txt, sitemap.xml, llms.txt, humans.txt
 The corner weather widget is [**weather-vivarium**](https://www.npmjs.com/package/weather-vivarium)
 (the original hand-built LA diorama, generalised to any city and published to npm), vendored under
 `assets/vendor/` because the site deliberately has no build step, and pinned to Los Angeles in
-`assets/js/weather-widget.js`. The original widget it grew from is preserved, runnable, in
+`assets/js/weather-widget.js`. We load its single-file `dist/` bundle and `<link>` its `style.css`
+with `id="wv-styles"`, which tells the package to skip runtime style injection — that's what lets
+`/weather` keep a strict `style-src 'self'`. Adoption notes and the findings behind its 1.1.0
+release are in [`docs/weather-vivarium-npm-package-feedback.md`](docs/weather-vivarium-npm-package-feedback.md).
+The original widget it grew from is preserved, runnable, in
 [`archive/la-beach-diorama/`](archive/la-beach-diorama/).
 
 ## Develop

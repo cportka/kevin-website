@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.13.2] - 2026-08-09
+
+### Fixed
+- **The zoomed widget sits above the info card on phones.** Below the package's
+  900px breakpoint its card becomes a bottom sheet, but the overlay still
+  centered on the full viewport — so the sheet covered the scene's lower third.
+  The site now measures the card and fits the overlay into the band above it,
+  still snapping to a whole multiple of 100px so the pixels stay crisp. Re-fits
+  on resize and when the card's own height changes.
+- Feedback doc: the mobile card overlap is recorded as finding #10, and the note
+  that #8–#10 all trace to the same closed seam (`wireZoom`'s expand/collapse).
+
 ## [1.13.1] - 2026-08-09
 
 ### Fixed

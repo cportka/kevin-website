@@ -100,7 +100,16 @@ not regret.
    `z-index: 9991` on the wrap for the duration of the animation. *Suggestion:*
    keep an `is-collapsing` class (holding the expanded z-index) on the wrap until
    the backdrop's fade completes.
-10. **The info card can show `19:60`.** `attributes()`' `hhmm()` computes
+10. **On a phone, the info card covers the scene it describes.** Below the 900px
+   breakpoint the card becomes a bottom sheet (`bottom:10px; max-height:30vh`),
+   but `intSize()` still sizes from `min(innerWidth, innerHeight) - 32` and
+   `.wv.is-expanded` still centres on the *full* viewport — so the sheet sits on
+   top of the scene's lower third (the wide-screen path gets this right, reserving
+   350px). We measure the card and re-fit the overlay into the band above it,
+   re-snapping to a whole multiple of 100px. *Suggestion:* mirror the wide-screen
+   reservation on narrow — subtract the sheet's height from the available box and
+   centre in what's left.
+11. **The info card can show `19:60`.** `attributes()`' `hhmm()` computes
    `h = floor(mins/60)`, `m = round(mins % 60)` — at 19:59:36+ the rounded
    minutes hit 60 without carrying into the hour, so "Local time" renders as
    `19:60` (we caught it in a screenshot at dusk). *Suggestion:* round first,
@@ -121,7 +130,14 @@ not regret.
 
 1.0.0 is a strong first release: the hard parts (place resolution, data plumbing,
 progressive enhancement, a11y) are done well, and every rough edge above has a
-workaround that fits in a comment (or, for #8, ~40 lines of glue — see `smoothZoom`
-in `assets/js/weather-widget.js`). Items **1, 2, 8 and 9** are the ones most worth
-fixing upstream before other strict-CSP or corner-widget consumers hit them; **10**
-is a one-line correctness fix.
+workaround that fits in a comment (or, for #8 and #10, ~60 lines of glue — see
+`smoothZoom` / `fitOverlay` in `assets/js/weather-widget.js`). Items **1, 2, 8, 9
+and 10** are the ones most worth fixing upstream before other strict-CSP, mobile,
+or corner-widget consumers hit them; **11** is a one-line correctness fix.
+
+Worth noting the shape of the last three: **8, 9 and 10 are all the same seam** —
+`wireZoom`'s expand/collapse is the one place the package takes over layout, and
+it's the one place a host can't reach without observing DOM mutations. Whatever
+form the fix takes (built-in FLIP, lifecycle events, or a documented
+`onExpand`/`onCollapse` hook), opening that seam would retire three separate
+workarounds at once.

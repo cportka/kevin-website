@@ -121,6 +121,39 @@ pros list is polish, not regret.
    minutes hit 60 without carrying into the hour, so "Local time" renders as
    `19:60` (we caught it in a screenshot at dusk). *Suggestion:* round first,
    then split: `mins = round(mins); h = floor(mins/60) % 24; m = mins % 60`.
+12. **A transparent row is left in the scene at `roadBot`** — an unpainted
+   1px band across the full width, just below the road. On an opaque page it
+   reads as a faint seam; zoomed over the overlay's translucent backdrop the
+   page content shows *through* the diorama, which is how we noticed it (the
+   row scales with the widget — ~14px tall on a 700px overlay).
+
+   Not a typo but a **convention disagreement about whether `roadBot` is
+   inclusive**, split across two files:
+
+   ```js
+   // compositor.js drawRoad() — roadBot EXCLUSIVE: paints rows 37..45
+   P.rect(x, G.groundTop, 1, G.roadBot - G.groundTop, C.surf);
+   // biomes.js drawShoulder() — roadBot INCLUSIVE: starts at 47
+   P.rect(0, env.roadBot + 1, P.L, P.L - env.roadBot - 1, env.col(ground));
+   ```
+
+   Row 46 belongs to neither, so nothing ever paints it. All 13 biome
+   shoulders start at `roadBot + 1`, so it isn't biome-specific. Measured by
+   reading the canvas back (`getImageData`, alpha 0 across all 100 columns):
+
+   | biome | fully transparent logical rows |
+   | --- | --- |
+   | coast (our LA scene), mountain, desert, city | **46** |
+   | ocean (`drawShoulder` is a no-op) | **46, 47, 48** |
+   | forest, tundra, plains | none — their ground fill happens to cover it |
+
+   Identical at midday and at 02:00, on both the docked and expanded widget.
+   *Suggestion:* pick one convention and state it where `GEOMETRY` is defined —
+   the smaller change is `drawShoulder` starting at `env.roadBot` (road owns
+   `[groundTop, roadBot)`, shoulder owns `[roadBot, L)`). Worth a regression
+   test too: render each biome and assert no row of the 50×50 buffer is fully
+   transparent. That one assertion catches this *and* the ocean case, which is
+   three rows and presumably not intended either.
 
 ## Integration cost, measured
 
@@ -147,7 +180,9 @@ progressive enhancement, a11y) are done well, and every rough edge above has a
 workaround that fits in a comment — or, for the zoom, in 90 lines (see `smoothZoom`
 / `fitOverlay` in `assets/js/weather-widget.js`). Items **1, 2, 8, 9 and 10** are
 the ones most worth fixing upstream before other strict-CSP, mobile, or
-corner-widget consumers hit them; **11** is a one-line correctness fix.
+corner-widget consumers hit them; **11 and 12** are small correctness fixes a
+consumer can't work around at all — they're inside the rendered bitmap and the
+card's own markup — so they can only be fixed upstream.
 
 **Findings 1, 8, 9 and 10 are one seam, not four bugs.** `wireZoom`'s
 expand/collapse is the single place the package takes over layout — position,
@@ -162,3 +197,10 @@ our 124 glue lines. If only one thing gets done for 1.1, this is it.
 Everything else on the list is small and independent. Nothing here made us regret
 the swap: an ~800-line rendering engine left this repo permanently, and what came
 back is CSS-adjacent glue at a single, well-understood boundary.
+
+One process note worth more than any single finding: **#11 and #12 were both caught
+by looking at screenshots, not by tests.** A `19:60` clock and a transparent row are
+invisible to a suite that asserts the widget mounted and fetched. If the package
+grows one habit, make it rendering the reference cities and *reading the pixels back*
+— row-alpha and a few sampled colours would have caught #12 across every biome for
+about ten lines of test.

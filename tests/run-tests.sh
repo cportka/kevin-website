@@ -193,13 +193,24 @@ section "CSP connect-src covers every API origin the scripts fetch"
 if [[ $have_py -eq 1 && -f index.html ]]; then
   BAD="$(python3 - <<'PY2'
 import re, os
-# hosts a given local JS file fetches (weather/marine/air-quality/tide services)
+# hosts a given local JS file fetches (weather/marine/air-quality/geocoding/tide services)
 def hosts_in(js):
     hs = set()
     if os.path.exists(js):
         txt = open(js, encoding="utf-8").read()
         for h in re.findall(r'https://([a-z0-9.-]*(?:open-meteo\.com|tidesandcurrents\.noaa\.gov))', txt):
             hs.add("https://" + h)
+    return hs
+
+# Hosts fetched anywhere in a vendored package tree (ES-module imports aren't
+# visible as <script src> tags, so a script that imports a vendored package
+# pulls in the whole tree's fetch surface).
+def hosts_in_tree(root):
+    hs = set()
+    for base, _dirs, files in os.walk(root):
+        for f in files:
+            if f.endswith(".js"):
+                hs |= hosts_in(os.path.join(base, f))
     return hs
 
 # For each page: the union of hosts fetched by the local JS *it loads* must be
@@ -212,6 +223,9 @@ for path in [f for f in ("index.html", "404.html", "weather.html") if os.path.ex
         s = s.split("#")[0].split("?")[0]
         if s.startswith("assets/js/") and s.endswith(".js"):
             needed |= hosts_in(s)
+            # Follow the one vendored-package import a site script can make.
+            if os.path.exists(s) and "vendor/weather-vivarium" in open(s, encoding="utf-8").read():
+                needed |= hosts_in_tree("assets/vendor/weather-vivarium")
     if not needed:
         continue
     csp = re.search(r'http-equiv="Content-Security-Policy"\s+content="([^"]+)"', html)
@@ -233,7 +247,31 @@ else
   skip "python3 absent — CSP connect-src check"
 fi
 
-# --- 8. Crawl / AI-readiness files present --------------------------------------------
+# --- 8. Vendored weather-vivarium matches the pinned npm dependency -------------------
+section "Vendored weather-vivarium — version pin"
+if [[ $have_py -eq 1 && -f assets/vendor/weather-vivarium/package.json ]]; then
+  VENDOR_OK="$(python3 - <<'PY3'
+import json
+dep = json.load(open("package.json")).get("dependencies", {}).get("weather-vivarium", "")
+ven = json.load(open("assets/vendor/weather-vivarium/package.json")).get("version", "")
+print("ok" if dep and dep.lstrip("^~=") == ven else f"dep={dep!r} vendored={ven!r}")
+PY3
+)"
+  if [[ "$VENDOR_OK" == "ok" ]]; then
+    pass "vendored weather-vivarium version matches package.json dependency pin"
+  else
+    fail "vendored weather-vivarium version mismatch: $VENDOR_OK"
+  fi
+  if [[ -f assets/vendor/weather-vivarium/LICENSE ]]; then
+    pass "vendored weather-vivarium ships its LICENSE"
+  else
+    fail "vendored weather-vivarium is missing its LICENSE"
+  fi
+else
+  skip "no vendored weather-vivarium (or python3 absent) — vendor pin check"
+fi
+
+# --- 9. Crawl / AI-readiness files present --------------------------------------------
 section "Crawl / AI-readiness / brand files"
 for f in CNAME robots.txt sitemap.xml llms.txt site.webmanifest favicon.svg .well-known/security.txt .nojekyll; do
   if [[ -e "$f" ]]; then pass "present: $f"; else fail "missing: $f"; fi

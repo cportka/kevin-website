@@ -37,9 +37,10 @@
 </script>
 
   <!-- Content Security Policy: same-origin everything except Google Fonts (styles + fonts)
-       and keyless weather/marine/air-quality/tide data APIs (connect-src, data only).
+       and Open-Meteo's keyless weather/marine/air-quality/geocoding data APIs
+       (connect-src, data only — read by the vendored weather-vivarium widget).
        No third-party scripts. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'sha256-9ce/fT2iKnDyymnbfmmGUw2LzegF3bhkcpRN9Uc+J+o='; connect-src 'self' https://api.open-meteo.com https://marine-api.open-meteo.com https://air-quality-api.open-meteo.com https://api.tidesandcurrents.noaa.gov; media-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'sha256-9ce/fT2iKnDyymnbfmmGUw2LzegF3bhkcpRN9Uc+J+o='; connect-src 'self' https://api.open-meteo.com https://marine-api.open-meteo.com https://air-quality-api.open-meteo.com https://geocoding-api.open-meteo.com; media-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'" />
 
   <!-- Icons / manifest -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -478,7 +479,11 @@
     </div>
   </footer>
 
+  <!-- Living LA weather diorama (weather-vivarium, pinned to Los Angeles) —
+       mounts into this corner host; click it to zoom. -->
+  <div id="vivarium" class="corner-vivarium"></div>
+
   <script src="assets/js/main.js" defer></script>
-  <script src="assets/js/scene.js" defer></script>
+  <script type="module" src="assets/js/weather-widget.js"></script>
 </body>
 </html>
